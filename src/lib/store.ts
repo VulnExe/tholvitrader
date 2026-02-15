@@ -10,6 +10,7 @@ interface AppStore {
     user: User | null;
     isAuthenticated: boolean;
     isLoading: boolean;
+    isInitialized: boolean;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
@@ -46,7 +47,7 @@ interface AppStore {
     // Payments
     payments: Payment[];
     fetchPayments: () => Promise<void>;
-    submitPayment: (tierRequested: UserTier, transactionId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
+    submitPayment: (tierRequested: UserTier, transactionId: string, screenshotUrl: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
     reviewPayment: (paymentId: string, status: PaymentStatus, rejectionReason?: string) => Promise<void>;
 
     // Users Admin
@@ -100,6 +101,7 @@ export const useStore = create<AppStore>()(
             user: null,
             isAuthenticated: false,
             isLoading: false,
+            isInitialized: false,
 
             // Initial Data State
             courses: [],
@@ -211,6 +213,8 @@ export const useStore = create<AppStore>()(
                 } else {
                     set({ user: null, isAuthenticated: false });
                 }
+
+                set({ isInitialized: true });
             },
 
             login: async (email, password) => {
@@ -301,6 +305,7 @@ export const useStore = create<AppStore>()(
             logout: async () => {
                 await supabase.auth.signOut();
                 set({ user: null, isAuthenticated: false });
+                window.location.href = '/auth/login';
             },
 
             updateProfile: async (data) => {
@@ -600,15 +605,21 @@ export const useStore = create<AppStore>()(
             fetchPayments: async () => {
                 const { data, error } = await supabase
                     .from('payments')
-                    .select('*')
+                    // Explicitly specify the foreign key column 'user_id' to resolve ambiguity
+                    .select('*, profiles:user_id(name, email)')
                     .order('created_at', { ascending: false });
+
+                if (error) {
+                    // Log specific error properties for better debugging
+                    console.error('Error fetching payments:', error.message || error);
+                }
 
                 if (data) {
                     const mappedPayments: Payment[] = data.map(p => ({
                         id: p.id,
                         userId: p.user_id,
-                        userName: '', // Would normally join with profiles
-                        userEmail: '',
+                        userName: p.profiles?.name || 'Unknown',
+                        userEmail: p.profiles?.email || 'No Email',
                         tierRequested: p.tier_requested as UserTier,
                         transactionId: p.transaction_id,
                         screenshotUrl: p.screenshot_url,
@@ -623,7 +634,7 @@ export const useStore = create<AppStore>()(
                 }
             },
 
-            submitPayment: async (tierRequested, transactionId, notes) => {
+            submitPayment: async (tierRequested, transactionId, screenshotUrl, notes) => {
                 const { user } = get();
                 if (!user) return { success: false, error: 'Not authenticated' };
 
@@ -631,6 +642,7 @@ export const useStore = create<AppStore>()(
                     user_id: user.id,
                     tier_requested: tierRequested,
                     transaction_id: transactionId,
+                    screenshot_url: screenshotUrl,
                     notes,
                     status: 'pending'
                 });

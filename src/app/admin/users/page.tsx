@@ -17,12 +17,14 @@ import { motion } from 'framer-motion';
 import { UserTier } from '@/lib/types';
 
 export default function AdminUsersPage() {
-    const { allUsers, fetchAllUsers, updateUserTier, setTelegramAccess, banUser, unbanUser } = useStore();
+    const { allUsers, fetchAllUsers, updateUserTier, setTelegramAccess, banUser, unbanUser, isInitialized, isAuthenticated } = useStore();
     const [search, setSearch] = useState('');
 
     useEffect(() => {
-        fetchAllUsers();
-    }, [fetchAllUsers]);
+        if (isInitialized && isAuthenticated) {
+            fetchAllUsers();
+        }
+    }, [fetchAllUsers, isInitialized, isAuthenticated]);
 
     const filteredUsers = allUsers.filter(u =>
         u.name.toLowerCase().includes(search.toLowerCase()) ||

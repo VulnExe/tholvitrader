@@ -3,17 +3,31 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import TierBadge from '@/components/ui/TierBadge';
-import { Shield, Clock, CheckCircle, XCircle, AlertCircle, Send, MessageSquare, ExternalLink } from 'lucide-react';
+import PaymentDetailsModal from '@/components/payment/PaymentDetailsModal';
+import { Shield, Clock, CheckCircle, XCircle, AlertCircle, Send, ExternalLink, Eye, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Payment } from '@/lib/types';
 
 export default function MyAccessPage() {
-    const { user, payments, fetchPayments, siteSettings, fetchSiteSettings } = useStore();
+    const { user, payments, fetchPayments, siteSettings, fetchSiteSettings, isInitialized, isAuthenticated } = useStore();
+
+    const [loading, setLoading] = useState(true);
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
     useEffect(() => {
-        fetchPayments();
-        fetchSiteSettings();
-    }, [fetchPayments, fetchSiteSettings]);
+        const load = async () => {
+            if (!isInitialized || !isAuthenticated) return;
+
+            setLoading(true);
+            await Promise.all([
+                fetchPayments(),
+                fetchSiteSettings()
+            ]);
+            setLoading(false);
+        };
+        load();
+    }, [fetchPayments, fetchSiteSettings, isInitialized, isAuthenticated]);
 
     if (!user) return null;
 
@@ -140,7 +154,12 @@ export default function MyAccessPage() {
                             Transaction History
                         </h2>
 
-                        {userPayments.length === 0 ? (
+                        {loading ? (
+                            <div className="p-12 text-center border border-white/5 rounded-2xl bg-[#111113]">
+                                <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-2" />
+                                <p className="text-white/30 text-xs">Loading history...</p>
+                            </div>
+                        ) : userPayments.length === 0 ? (
                             <div className="p-12 text-center border-2 border-dashed border-white/5 rounded-2xl">
                                 <p className="text-white/20 text-sm">No transactions found</p>
                             </div>
@@ -157,26 +176,69 @@ export default function MyAccessPage() {
                                             className="p-4 rounded-xl bg-[#111113] border border-white/5 group"
                                         >
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                                                <div className="flex items-start gap-4 flex-1 min-w-0">
+                                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0 mt-1">
                                                         <Shield className="w-5 h-5 text-white/10" />
                                                     </div>
-                                                    <div className="min-w-0">
+                                                    <div className="min-w-0 flex-1 space-y-1">
                                                         <div className="flex flex-wrap items-center gap-2">
                                                             <span className="text-sm font-bold text-white whitespace-nowrap">{payment.tierRequested.toUpperCase()} Upgrade</span>
                                                             <TierBadge tier={payment.tierRequested} size="sm" />
                                                         </div>
-                                                        <p className="text-[10px] text-white/30 font-mono mt-0.5 truncate uppercase">Hash: {payment.transactionId.slice(0, 16)}...</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] text-white/40 uppercase tracking-wider font-semibold">TxID:</span>
+                                                            <code className="text-[11px] text-blue-400 font-mono bg-blue-400/5 px-1.5 py-0.5 rounded border border-blue-400/10 truncate select-all">
+                                                                {payment.transactionId}
+                                                            </code>
+                                                        </div>
+                                                        {payment.notes && (
+                                                            <p className="text-[11px] text-white/30 italic truncate max-w-md">"{payment.notes}"</p>
+                                                        )}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center sm:flex-col sm:items-end justify-between sm:justify-center gap-2">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${status.bg} ${status.color} border ${status.border}`}>
-                                                        <status.icon className="w-3 h-3" />
-                                                        {status.label}
-                                                    </span>
-                                                    <p className="text-[10px] text-white/20 font-medium italic">
-                                                        {new Date(payment.createdAt).toLocaleDateString()}
-                                                    </p>
+
+                                                <div className="flex items-center gap-4 sm:gap-6 pl-14 sm:pl-0">
+                                                    {/* Screenshot Thumbnail for User */}
+                                                    {payment.screenshotUrl && (
+                                                        <a
+                                                            href={payment.screenshotUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex flex-col items-center gap-1 group/proof"
+                                                            title="View Payment Proof"
+                                                        >
+                                                            <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/10 group-hover/proof:border-purple-500/50 transition-colors relative">
+                                                                <img
+                                                                    src={payment.screenshotUrl}
+                                                                    alt="Proof"
+                                                                    className="w-full h-full object-cover group-hover/proof:scale-110 transition-transform"
+                                                                />
+                                                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/proof:opacity-100 flex items-center justify-center transition-opacity">
+                                                                    <ExternalLink className="w-4 h-4 text-white" />
+                                                                </div>
+                                                            </div>
+                                                            <span className="text-[10px] text-white/20 group-hover/proof:text-purple-400 transition-colors">View Proof</span>
+                                                        </a>
+                                                    )}
+
+                                                    <div className="flex flex-col items-end gap-1 min-w-[80px]">
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => setSelectedPayment(payment)}
+                                                                className="p-1.5 rounded-lg bg-white/5 text-white/40 hover:bg-white/10 hover:text-white transition-all"
+                                                                title="View Full Details"
+                                                            >
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${status.bg} ${status.color} border ${status.border}`}>
+                                                                <status.icon className="w-3 h-3" />
+                                                                {status.label}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-[10px] text-white/20 font-medium italic">
+                                                            {new Date(payment.createdAt).toLocaleDateString()}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </motion.div>

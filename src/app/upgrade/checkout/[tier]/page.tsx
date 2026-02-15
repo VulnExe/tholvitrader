@@ -29,7 +29,14 @@ export default function CheckoutPage() {
     const [txId, setTxId] = useState('');
     const [notes, setNotes] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        return () => {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+        };
+    }, [previewUrl]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
@@ -57,9 +64,12 @@ export default function CheckoutPage() {
         }
     };
 
+    const [downloading, setDownloading] = useState(false);
+
     const handleDownload = async () => {
         if (!siteSettings.binanceQrUrl) return;
         try {
+            setDownloading(true);
             const response = await fetch(siteSettings.binanceQrUrl);
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
@@ -72,6 +82,8 @@ export default function CheckoutPage() {
             window.URL.revokeObjectURL(url);
         } catch (err) {
             console.error('Download failed', err);
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -88,13 +100,13 @@ export default function CheckoutPage() {
         const fileName = `${user?.id}_${Date.now()}_${file.name}`;
         const { publicUrl, error: uploadError } = await uploadFile('uploads', `payments/${fileName}`, file);
 
-        if (uploadError) {
+        if (uploadError || !publicUrl) {
             setError('Failed to upload screenshot. Please try again.');
             setLoading(false);
             return;
         }
 
-        const result = await submitPayment(tierId, txId, notes);
+        const result = await submitPayment(tierId, txId, publicUrl, notes);
 
         if (result.success) {
             setSuccess(true);
@@ -165,10 +177,20 @@ export default function CheckoutPage() {
                                                 </div>
                                                 <button
                                                     onClick={handleDownload}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-semibold text-white/60 hover:text-white transition-all border border-white/5"
+                                                    disabled={downloading}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-semibold text-white/60 hover:text-white transition-all border border-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
-                                                    <Download className="w-3 h-3" />
-                                                    Download QR Code
+                                                    {downloading ? (
+                                                        <>
+                                                            <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                            Downloading...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Download className="w-3 h-3" />
+                                                            Download QR Code
+                                                        </>
+                                                    )}
                                                 </button>
                                             </div>
                                         )}
@@ -247,13 +269,26 @@ export default function CheckoutPage() {
                             <div>
                                 <label className="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Payment Screenshot</label>
                                 <label className={`
-                                    w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all
+                                    w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all overflow-hidden relative
                                     ${file ? 'border-green-500/30 bg-green-500/5' : 'border-white/10 bg-white/[0.02] hover:bg-white/5 hover:border-white/20'}
                                 `}>
                                     {file ? (
                                         <>
-                                            <CheckCircle2 className="w-8 h-8 text-green-500" />
-                                            <span className="text-xs text-white/60 truncate max-w-[200px]">{file.name}</span>
+                                            {previewUrl ? (
+                                                <div className="absolute inset-0 w-full h-full">
+                                                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover opacity-50" />
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                                                        <CheckCircle2 className="w-8 h-8 text-green-500 mb-2" />
+                                                        <span className="text-xs text-white/90 font-medium truncate max-w-[200px]">{file.name}</span>
+                                                        <span className="text-[10px] text-white/60 mt-1">Click to change</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle2 className="w-8 h-8 text-green-500" />
+                                                    <span className="text-xs text-white/60 truncate max-w-[200px]">{file.name}</span>
+                                                </>
+                                            )}
                                         </>
                                     ) : (
                                         <>
@@ -261,7 +296,22 @@ export default function CheckoutPage() {
                                             <span className="text-xs text-white/30">Click to upload screenshot</span>
                                         </>
                                     )}
-                                    <input type="file" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} accept="image/*" />
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const selected = e.target.files?.[0];
+                                            if (selected) {
+                                                setFile(selected);
+                                                const url = URL.createObjectURL(selected);
+                                                setPreviewUrl(url);
+                                            } else {
+                                                setFile(null);
+                                                setPreviewUrl(null);
+                                            }
+                                        }}
+                                        accept="image/*"
+                                    />
                                 </label>
                             </div>
 

@@ -12,7 +12,7 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const { user, isAuthenticated, initAuth, fetchNotifications } = useStore();
+    const { user, isAuthenticated, isInitialized, initAuth, fetchNotifications } = useStore();
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
@@ -30,19 +30,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }, [mounted, initAuth]);
 
     useEffect(() => {
-        if (mounted) {
-            if (isAuthenticated) {
-                fetchNotifications();
-                useStore.getState().fetchCourses();
-                useStore.getState().fetchBlogs();
-            }
+        if (mounted && isInitialized && isAuthenticated) {
+            fetchNotifications();
+            useStore.getState().fetchCourses();
+            useStore.getState().fetchBlogs();
         }
-    }, [mounted, isAuthenticated, fetchNotifications, user]);
+    }, [mounted, isInitialized, isAuthenticated, fetchNotifications]);
+
+    useEffect(() => {
+        if (mounted && isInitialized && !isAuthenticated && !pathname?.startsWith('/auth')) {
+            router.push('/auth/login');
+        }
+    }, [mounted, isInitialized, isAuthenticated, pathname, router]);
 
     const isAdminRoute = pathname?.startsWith('/admin');
     const isAdmin = user?.role === 'admin';
 
-    if (!mounted || !isAuthenticated || (isAuthenticated && !user)) {
+    // Show loader only if:
+    // 1. Not mounted yet (rehydration)
+    // 2. Not initialized AND not authenticated (don't know status yet)
+    // 3. Authenticated but no user data (waiting for profile)
+    if (!mounted || (!isInitialized && !isAuthenticated) || (isAuthenticated && !user)) {
         return (
             <div className="min-h-screen bg-[#050507] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />

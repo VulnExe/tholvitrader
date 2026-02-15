@@ -4,6 +4,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import TierBadge from '@/components/ui/TierBadge';
 import Modal from '@/components/ui/Modal';
+import PaymentDetailsModal from '@/components/payment/PaymentDetailsModal';
 import { useState, useEffect } from 'react';
 import {
     CheckCircle,
@@ -11,24 +12,30 @@ import {
     ExternalLink,
     Search,
     Filter,
-    MessageSquare
+    Loader2,
+    Eye
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { PaymentStatus } from '@/lib/types';
+import { PaymentStatus, Payment } from '@/lib/types';
 
 export default function AdminPaymentsPage() {
-    const { payments, reviewPayment, fetchPayments } = useStore();
-    const [filter, setFilter] = useState<PaymentStatus | 'all'>('pending');
+    const { payments, reviewPayment, fetchPayments, isLoading, fetchAllUsers, isInitialized, isAuthenticated } = useStore();
+    const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
     const [search, setSearch] = useState('');
 
     // Rejection Modal State
-    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectModalOpen, setRejectModalOpen] = useState(false);
     const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
     const [rejectionReason, setRejectionReason] = useState('');
 
+    // New state for details modal
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+
     useEffect(() => {
-        fetchPayments();
-    }, [fetchPayments]);
+        if (isInitialized && isAuthenticated) {
+            fetchPayments();
+        }
+    }, [fetchPayments, isInitialized, isAuthenticated]);
 
     const filteredPayments = payments.filter(p => {
         const matchesFilter = filter === 'all' || p.status === filter;
@@ -45,13 +52,13 @@ export default function AdminPaymentsPage() {
 
     const openRejectModal = (id: string) => {
         setSelectedPaymentId(id);
-        setShowRejectModal(true);
+        setRejectModalOpen(true);
     };
 
     const handleReject = async () => {
         if (selectedPaymentId && rejectionReason) {
             await reviewPayment(selectedPaymentId, 'rejected', rejectionReason);
-            setShowRejectModal(false);
+            setRejectModalOpen(false);
             setRejectionReason('');
             setSelectedPaymentId(null);
         }
@@ -149,34 +156,52 @@ export default function AdminPaymentsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                {payment.status === 'pending' ? (
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => handleApprove(payment.id)}
-                                                            className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-all"
-                                                            title="Approve"
-                                                        >
-                                                            <CheckCircle className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => openRejectModal(payment.id)}
-                                                            className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
-                                                            title="Reject"
-                                                        >
-                                                            <XCircle className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                ) : payment.screenshotUrl ? (
-                                                    <a
-                                                        href={payment.screenshotUrl}
-                                                        target="_blank"
-                                                        className="text-white/20 hover:text-white transition-colors flex items-center justify-end gap-1.5 text-xs"
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => setSelectedPayment(payment)}
+                                                        className="p-2 rounded-lg bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition-all"
+                                                        title="View Details"
                                                     >
-                                                        Screenshot <ExternalLink className="w-3 h-3" />
-                                                    </a>
-                                                ) : (
-                                                    <span className="text-white/10 text-[10px]">No Actions</span>
-                                                )}
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    {payment.screenshotUrl && (
+                                                        <a
+                                                            href={payment.screenshotUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block w-10 h-10 rounded-lg overflow-hidden border border-white/10 hover:border-purple-500/50 transition-colors relative group shrink-0"
+                                                            title="View Screenshot"
+                                                        >
+                                                            <img
+                                                                src={payment.screenshotUrl}
+                                                                alt="Proof"
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                                                <ExternalLink className="w-3 h-3 text-white" />
+                                                            </div>
+                                                        </a>
+                                                    )}
+
+                                                    {payment.status === 'pending' && (
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => handleApprove(payment.id)}
+                                                                className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500/20 transition-all"
+                                                                title="Approve"
+                                                            >
+                                                                <CheckCircle className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => openRejectModal(payment.id)}
+                                                                className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                                                                title="Reject"
+                                                            >
+                                                                <XCircle className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </td>
                                         </motion.tr>
                                     ))
@@ -188,37 +213,42 @@ export default function AdminPaymentsPage() {
             </div>
 
             {/* Reject Modal */}
-            <Modal
-                isOpen={showRejectModal}
-                onClose={() => setShowRejectModal(false)}
-                title="Reject Payment"
-            >
+            <Modal isOpen={rejectModalOpen} onClose={() => setRejectModalOpen(false)} title="Reject Payment">
                 <div className="space-y-4">
-                    <p className="text-sm text-white/40">Please provide a reason for rejecting this payment. This will be visible to the user.</p>
-                    <textarea
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        placeholder="e.g. Transaction ID not found, Invalid screenshot..."
-                        rows={3}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-red-500/50 resize-none"
-                    />
-                    <div className="flex gap-3">
+                    <div>
+                        <label className="block text-sm font-medium text-white mb-2">Rejection Reason</label>
+                        <textarea
+                            className="w-full bg-[#0A0A0C] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-purple-500/50 min-h-[100px]"
+                            placeholder="Explain why the payment is being rejected..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3">
                         <button
-                            onClick={() => setShowRejectModal(false)}
-                            className="flex-1 py-2 rounded-lg text-sm text-white/40 hover:bg-white/5 transition-colors"
+                            onClick={() => setRejectModalOpen(false)}
+                            className="px-4 py-2 text-white/60 hover:text-white transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleReject}
-                            disabled={!rejectionReason}
-                            className="flex-1 py-2 bg-red-500 rounded-lg text-sm text-white font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors"
+                            disabled={!rejectionReason} // Added disabled state
                         >
                             Reject Payment
                         </button>
                     </div>
                 </div>
             </Modal>
+
+            {/* Payment Details Modal */}
+            <PaymentDetailsModal
+                payment={selectedPayment}
+                isOpen={!!selectedPayment && !rejectModalOpen} // Only open if selectedPayment exists AND reject modal is not open
+                onClose={() => setSelectedPayment(null)}
+                isAdmin={true}
+            />
         </DashboardLayout>
     );
 }
