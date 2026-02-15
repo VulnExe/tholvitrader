@@ -70,6 +70,23 @@ interface AppStore {
         userGrowth: { date: string; count: number }[];
     };
     fetchAdminStats: () => Promise<void>;
+    siteSettings: {
+        id: string;
+        binanceQrUrl: string;
+        binanceId: string;
+        telegramBotLink: string;
+        telegramChannelLink: string;
+    };
+    fetchSiteSettings: () => Promise<void>;
+    updateSiteSettings: (data: any) => Promise<void>;
+
+    // Section Management
+    addSection: (type: 'course' | 'tool', parentId: string, data: any) => Promise<void>;
+    updateSection: (type: 'course' | 'tool', sectionId: string, data: any) => Promise<void>;
+    deleteSection: (type: 'course' | 'tool', sectionId: string) => Promise<void>;
+
+    // Storage
+    uploadFile: (bucket: string, path: string, file: File) => Promise<{ publicUrl: string | null; error?: string }>;
 }
 
 export const useStore = create<AppStore>()(
@@ -95,6 +112,14 @@ export const useStore = create<AppStore>()(
                 conversionRate: 0,
                 userGrowth: []
             },
+            siteSettings: {
+                id: 'main',
+                binanceQrUrl: '',
+                binanceId: '',
+                telegramBotLink: '',
+                telegramChannelLink: ''
+            },
+
 
             // Auth Actions
             checkAuth: async () => {
@@ -630,7 +655,82 @@ export const useStore = create<AppStore>()(
                     };
                     set({ adminStats: stats as any });
                 }
+            },
+
+            // Site Settings Actions
+            fetchSiteSettings: async () => {
+                const { data, error } = await supabase.from('site_settings').select('*').eq('id', 'main').single();
+                if (data) {
+                    set({
+                        siteSettings: {
+                            id: data.id,
+                            binanceQrUrl: data.binance_qr_url,
+                            binanceId: data.binance_id,
+                            telegramBotLink: data.telegram_bot_link,
+                            telegramChannelLink: data.telegram_channel_link
+                        }
+                    });
+                }
+            },
+
+            updateSiteSettings: async (data) => {
+                await supabase.from('site_settings').update({
+                    binance_qr_url: data.binanceQrUrl,
+                    binance_id: data.binanceId,
+                    telegram_bot_link: data.telegramBotLink,
+                    telegram_channel_link: data.telegramChannelLink,
+                    updated_at: new Date().toISOString()
+                }).eq('id', 'main');
+                await get().fetchSiteSettings();
+            },
+
+            // Section Management Actions
+            addSection: async (type, parentId, data) => {
+                const table = type === 'course' ? 'course_sections' : 'tool_sections';
+                const parentCol = type === 'course' ? 'course_id' : 'tool_id';
+
+                await supabase.from(table).insert({
+                    [parentCol]: parentId,
+                    title: data.title,
+                    content: data.content,
+                    video_url: data.videoUrl,
+                    order_index: data.orderIndex || 0
+                });
+
+                if (type === 'course') await get().fetchCourses();
+                else await get().fetchTools();
+            },
+
+            updateSection: async (type, sectionId, data) => {
+                const table = type === 'course' ? 'course_sections' : 'tool_sections';
+                await supabase.from(table).update({
+                    title: data.title,
+                    content: data.content,
+                    video_url: data.videoUrl,
+                    order_index: data.orderIndex
+                }).eq('id', sectionId);
+
+                if (type === 'course') await get().fetchCourses();
+                else await get().fetchTools();
+            },
+
+            deleteSection: async (type, sectionId) => {
+                const table = type === 'course' ? 'course_sections' : 'tool_sections';
+                await supabase.from(table).delete().eq('id', sectionId);
+
+                if (type === 'course') await get().fetchCourses();
+                else await get().fetchTools();
+            },
+
+            // Upload Utility
+            uploadFile: async (bucket, path, file) => {
+                const { data, error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
+                if (error) return { publicUrl: null, error: error.message };
+
+                const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
+                return { publicUrl };
             }
+
         }),
         {
             name: 'tholvitrader-storage',

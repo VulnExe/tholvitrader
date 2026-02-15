@@ -282,6 +282,30 @@ CREATE POLICY "Authenticated users can upload"
   ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'uploads' AND auth.role() = 'authenticated');
 
-CREATE POLICY "Anyone can view uploads"
-  ON storage.objects FOR SELECT
-  USING (bucket_id = 'uploads');
+-- ============================================================
+-- 10. SITE SETTINGS (Admin controllable)
+-- ============================================================
+CREATE TABLE public.site_settings (
+  id TEXT PRIMARY KEY DEFAULT 'main',
+  binance_qr_url TEXT,
+  binance_id TEXT,
+  telegram_bot_link TEXT,
+  telegram_channel_link TEXT,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can view site settings"
+  ON public.site_settings FOR SELECT
+  USING (true);
+
+CREATE POLICY "Admins can manage site settings"
+  ON public.site_settings FOR ALL
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- Insert default settings row
+INSERT INTO public.site_settings (id, usdt_address) 
+VALUES ('main', 'TQxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+ON CONFLICT (id) DO NOTHING;

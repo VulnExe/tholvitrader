@@ -44,6 +44,7 @@ export default function Sidebar() {
         { href: '/admin/users', icon: Users, label: 'Users' },
         { href: '/admin/content', icon: FolderOpen, label: 'Content' },
         { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+        { href: '/admin/settings', icon: Settings, label: 'Settings' },
     ];
 
     const menuItems = isAdminRoute ? adminMenuItems : userMenuItems;

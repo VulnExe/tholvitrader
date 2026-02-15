@@ -7,16 +7,24 @@ import { canAccessContent } from '@/lib/tierSystem';
 import TierBadge from '@/components/ui/TierBadge';
 import UpgradeModal from '@/components/ui/UpgradeModal';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Lock, CheckCircle, Circle, PlayCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import {
+    PlayCircle,
+    Lock,
+    CheckCircle2,
+    ArrowLeft,
+    ArrowRight,
+    BookOpen,
+    Youtube
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CourseDetailPage() {
     const params = useParams();
     const router = useRouter();
     const { user, getCourse } = useStore();
     const [course, setCourse] = useState<any>(null);
-    const [showUpgrade, setShowUpgrade] = useState(false);
     const [activeSection, setActiveSection] = useState(0);
+    const [showUpgrade, setShowUpgrade] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -49,165 +57,162 @@ export default function CourseDetailPage() {
     }
 
     const isAccessible = canAccessContent(user.tier, course.tierRequired);
+    const currentSection = course.content[activeSection];
 
-    if (!isAccessible) {
-        return (
-            <DashboardLayout>
-                <div className="max-w-3xl mx-auto">
-                    <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-6">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Courses
-                    </button>
-
-                    <div className="rounded-2xl border border-white/5 overflow-hidden">
-                        <div className="h-48 bg-gradient-to-br from-purple-500/10 to-blue-500/10 flex items-center justify-center relative">
-                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-                                <div className="w-16 h-16 rounded-full bg-black/50 border border-white/10 flex items-center justify-center">
-                                    <Lock className="w-7 h-7 text-white/60" />
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-white font-semibold">This course requires {course.tierRequired.toUpperCase()}</p>
-                                    <p className="text-white/40 text-sm mt-1">Upgrade your plan to unlock full access</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-6 text-center">
-                            <button
-                                onClick={() => setShowUpgrade(true)}
-                                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-medium hover:shadow-lg transition-all"
-                            >
-                                Upgrade to Unlock
-                            </button>
-                        </div>
-                    </div>
-
-                    <UpgradeModal
-                        isOpen={showUpgrade}
-                        onClose={() => setShowUpgrade(false)}
-                        currentTier={user.tier}
-                        onUpgrade={() => {
-                            setShowUpgrade(false);
-                            router.push('/upgrade');
-                        }}
-                    />
-                </div>
-            </DashboardLayout>
-        );
-    }
+    // Helper to extract YouTube ID
+    const getYTId = (url: string) => {
+        const match = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^& \n?#]+)/);
+        return match ? match[1] : null;
+    };
 
     return (
         <DashboardLayout>
-            <div className="max-w-5xl">
-                <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-white/40 hover:text-white/70 transition-colors mb-6">
+            <div className="max-w-6xl mx-auto">
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-white/40 hover:text-white transition-colors mb-6">
                     <ArrowLeft className="w-4 h-4" />
                     Back to Courses
                 </button>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
-                >
-                    <div className="flex items-center gap-3 mb-3">
-                        <TierBadge tier={course.tierRequired} size="md" />
-                        <span className="text-xs text-white/30">{course.content?.length || 0} Lessons</span>
-                    </div>
-                    <h1 className="text-3xl font-bold text-white">{course.title}</h1>
-                    <p className="text-white/50 mt-2 max-w-2xl">{course.description}</p>
-                </motion.div>
-
-                <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Sidebar */}
-                    <div className="lg:w-72 shrink-0">
-                        <div className="sticky top-24 p-4 rounded-xl bg-[#111113] border border-white/5">
-                            <h3 className="text-sm font-medium text-white/50 mb-3 uppercase tracking-wider">Course Syllabus</h3>
-                            <div className="space-y-1">
-                                {course.content?.map((section: any, i: number) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => setActiveSection(i)}
-                                        className={`
-                      w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all
-                      ${activeSection === i
-                                                ? 'bg-purple-500/10 text-white border border-purple-500/20'
-                                                : 'text-white/40 hover:text-white/70 hover:bg-white/5'}
-                    `}
-                                    >
-                                        <div className="shrink-0 transition-colors">
-                                            {activeSection > i ? (
-                                                <CheckCircle className="w-4 h-4 text-green-500" />
-                                            ) : activeSection === i ? (
-                                                <Circle className="w-4 h-4 text-purple-400" />
-                                            ) : (
-                                                <Circle className="w-4 h-4 text-white/10" />
-                                            )}
-                                        </div>
-                                        <span className="truncate">{section.title}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Main Content */}
+                <div className="flex flex-col lg:flex-row gap-8">
+                    {/* Main Content Area */}
                     <div className="flex-1 min-w-0">
-                        <motion.div
-                            key={activeSection}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="p-6 rounded-xl bg-[#111113] border border-white/5"
-                        >
-                            {course.content?.[activeSection] && (
-                                <>
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h2 className="text-xl font-semibold text-white">{course.content[activeSection].title}</h2>
-                                        {course.content[activeSection].videoUrl && (
-                                            <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase flex items-center gap-1">
-                                                <PlayCircle className="w-3 h-3" /> Video included
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Video Player if available */}
-                                    {course.content[activeSection].videoUrl && (
-                                        <div className="aspect-video w-full rounded-xl overflow-hidden mb-8 border border-white/5 bg-black">
+                        {isAccessible ? (
+                            <div className="space-y-6">
+                                {/* Video Player */}
+                                <div className="aspect-video bg-black rounded-2xl overflow-hidden border border-white/5 relative group">
+                                    {currentSection?.videoUrl ? (
+                                        getYTId(currentSection.videoUrl) ? (
                                             <iframe
-                                                src={course.content[activeSection].videoUrl.replace('watch?v=', 'embed/')}
+                                                src={`https://www.youtube.com/embed/${getYTId(currentSection.videoUrl)}?autoplay=0&rel=0`}
                                                 className="w-full h-full"
-                                                title="Video player"
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                 allowFullScreen
                                             ></iframe>
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-[#0a0a0c]">
+                                                <Youtube className="w-12 h-12 text-white/10" />
+                                                <p className="text-white/30 text-sm">Invalid video URL</p>
+                                                <a href={currentSection.videoUrl} target="_blank" className="px-4 py-2 bg-white/5 rounded-lg text-xs text-white/60">Open External Link</a>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div className="w-full h-full flex flex-col items-center justify-center bg-[#0a0a0c]">
+                                            <PlayCircle className="w-12 h-12 text-white/10 mb-4" />
+                                            <p className="text-white/30 text-sm">No video for this section</p>
                                         </div>
                                     )}
+                                </div>
 
-                                    <div className="prose prose-invert max-w-none">
-                                        <div dangerouslySetInnerHTML={{ __html: course.content[activeSection].content.replace(/\n/g, '<br/>') }} />
-                                    </div>
+                                {/* Section Title & Info */}
+                                <div className="flex items-center justify-between">
+                                    <h1 className="text-2xl font-bold text-white">{currentSection?.title}</h1>
+                                    <span className="px-3 py-1 rounded-full bg-white/5 text-[10px] font-bold text-white/30 uppercase tracking-widest">
+                                        Lesson {activeSection + 1} of {course.content.length}
+                                    </span>
+                                </div>
 
-                                    <div className="mt-12 pt-8 border-t border-white/5 flex justify-between">
-                                        <button
-                                            disabled={activeSection === 0}
-                                            onClick={() => setActiveSection(activeSection - 1)}
-                                            className="px-4 py-2 rounded-lg text-sm text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-0"
-                                        >
-                                            Previous Lesson
-                                        </button>
-                                        <button
-                                            disabled={activeSection === course.content.length - 1}
-                                            onClick={() => setActiveSection(activeSection + 1)}
-                                            className="px-6 py-2 bg-purple-600 rounded-lg text-sm text-white font-medium hover:bg-purple-700 disabled:opacity-0 transition-colors"
-                                        >
-                                            Next Lesson
-                                        </button>
+                                {/* Lesson Description (Markdown) */}
+                                <div className="p-8 rounded-2xl bg-[#111113] border border-white/5 prose prose-invert max-w-none">
+                                    <div dangerouslySetInnerHTML={{ __html: currentSection?.content.replace(/\n/g, '<br/>') || 'No description available for this lesson.' }} />
+                                </div>
+
+                                {/* Navigation Buttons */}
+                                <div className="flex items-center justify-between pt-4">
+                                    <button
+                                        disabled={activeSection === 0}
+                                        onClick={() => setActiveSection(s => s - 1)}
+                                        className="flex items-center gap-2 text-sm font-medium text-white/40 hover:text-white disabled:opacity-20 transition-all"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" /> Previous Lesson
+                                    </button>
+                                    <button
+                                        disabled={activeSection === course.content.length - 1}
+                                        onClick={() => setActiveSection(s => s + 1)}
+                                        className="flex items-center gap-2 text-sm font-medium text-white hover:text-purple-400 disabled:opacity-20 transition-all"
+                                    >
+                                        Next Lesson <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="relative aspect-video bg-[#0a0a0c] rounded-2xl overflow-hidden border border-white/5 flex items-center justify-center shadow-2xl">
+                                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/10" />
+                                <div className="text-center relative z-10 p-8 max-w-sm">
+                                    <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-6">
+                                        <Lock className="w-8 h-8 text-red-500" />
                                     </div>
-                                </>
+                                    <h3 className="text-xl font-bold text-white mb-2">Content Locked</h3>
+                                    <p className="text-sm text-white/40 mb-8">
+                                        This advanced course is exclusive to <strong>{course.tierRequired.toUpperCase()}</strong> members.
+                                    </p>
+                                    <button
+                                        onClick={() => setShowUpgrade(true)}
+                                        className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-bold hover:shadow-lg transition-all"
+                                    >
+                                        Upgrade Your Plan
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sidebar: Course Content */}
+                    <div className="w-full lg:w-80 shrink-0">
+                        <div className="bg-[#111113] border border-white/5 rounded-2xl overflow-hidden sticky top-24">
+                            <div className="p-4 bg-white/5 border-b border-white/5">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <BookOpen className="w-4 h-4 text-purple-400" />
+                                    <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Course Registry</span>
+                                </div>
+                                <h3 className="text-sm font-bold text-white truncate">{course.title}</h3>
+                            </div>
+
+                            <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
+                                {course.content.map((section: any, i: number) => (
+                                    <button
+                                        key={section.id}
+                                        onClick={() => isAccessible && setActiveSection(i)}
+                                        className={`
+                      w-full p-4 flex items-start gap-4 text-left transition-all border-b border-white/[0.02] last:border-0
+                      ${activeSection === i ? 'bg-purple-500/10 border-l-2 border-l-purple-500' : 'hover:bg-white/[0.02] border-l-2 border-l-transparent'}
+                      ${!isAccessible ? 'cursor-not-allowed grayscale' : ''}
+                    `}
+                                    >
+                                        <div className={`mt-0.5 shrink-0 ${activeSection === i ? 'text-purple-400' : isAccessible ? 'text-white/20' : 'text-white/10'}`}>
+                                            {activeSection === i ? <PlayCircle className="w-5 h-5 fill-purple-400/20" /> : <Lock className="w-4 h-4" />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Module {i + 1}</span>
+                                            </div>
+                                            <p className={`text-xs font-bold truncate ${activeSection === i ? 'text-white' : 'text-white/50'}`}>
+                                                {section.title}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+
+                            {!isAccessible && (
+                                <div className="p-4 bg-red-500/5 mt-auto">
+                                    <p className="text-[10px] text-red-400/60 leading-relaxed text-center">
+                                        Verification required for full access to these modules.
+                                    </p>
+                                </div>
                             )}
-                        </motion.div>
+                        </div>
                     </div>
                 </div>
+
+                <UpgradeModal
+                    isOpen={showUpgrade}
+                    onClose={() => setShowUpgrade(false)}
+                    currentTier={user.tier}
+                    onUpgrade={() => {
+                        setShowUpgrade(false);
+                        router.push('/upgrade');
+                    }}
+                />
             </div>
         </DashboardLayout>
     );
