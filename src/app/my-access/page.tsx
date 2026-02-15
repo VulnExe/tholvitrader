@@ -60,44 +60,75 @@ export default function MyAccessPage() {
 
                         {/* Telegram Status */}
                         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className={`p-4 rounded-xl border transition-all ${user.telegramAccess ? 'bg-green-500/5 border-green-500/10' : 'bg-white/5 border-white/5'}`}>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <Send className={`w-4 h-4 ${user.telegramAccess ? 'text-green-400' : 'text-white/20'}`} />
-                                    <span className="text-xs font-bold text-white uppercase tracking-wider">Premium Channel</span>
+                            <div className={`p-5 rounded-2xl border transition-all ${user.telegramAccess && user.tier !== 'free' ? 'bg-green-500/5 border-green-500/10' : 'bg-white/5 border-white/5'}`}>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${user.telegramAccess && user.tier !== 'free' ? 'bg-green-500/20' : 'bg-white/5'}`}>
+                                        <Send className={`w-4 h-4 ${user.telegramAccess && user.tier !== 'free' ? 'text-green-400' : 'text-white/20'}`} />
+                                    </div>
+                                    <span className="text-xs font-black text-white uppercase tracking-widest">Premium Group</span>
                                 </div>
-                                <p className="text-[11px] text-white/40 leading-relaxed mb-4">
-                                    {user.telegramAccess ? 'Access to live signals and insights.' : 'Gain access by upgrading to Tier 1 or Tier 2.'}
+
+                                <p className="text-[11px] text-white/40 leading-relaxed mb-6 font-medium">
+                                    {user.tier === 'free'
+                                        ? 'Exclusive for Tier 1 & Tier 2. This private group includes live trading signals and market analysis.'
+                                        : user.telegramAccess
+                                            ? 'Your access is verified. You should have been added to the private group manually by an admin.'
+                                            : 'Payment verified! Admin will add you manually after verifying your @username in Settings.'}
                                 </p>
-                                {user.telegramAccess ? (
-                                    <a
-                                        href={siteSettings.telegramChannelLink}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full py-2 bg-green-500/20 border border-green-500/20 rounded-lg text-green-400 text-xs font-bold flex items-center justify-center gap-2 hover:bg-green-500/30 transition-all"
+
+                                <div className={`px-4 py-2.5 rounded-xl border flex items-center justify-between ${user.telegramAccess && user.tier !== 'free' ? 'bg-green-400/10 border-green-400/20' : 'bg-white/5 border-white/5'}`}>
+                                    <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em]">Status</span>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${user.telegramAccess && user.tier !== 'free' ? 'text-green-400' : 'text-white/20'}`}>
+                                        {user.tier === 'free' ? 'LOCKED' : user.telegramAccess ? 'ACTIVE' : 'PENDING'}
+                                    </span>
+                                </div>
+
+                                {user.tier === 'free' && (
+                                    <button
+                                        onClick={() => window.location.href = '/upgrade'}
+                                        className="w-full mt-3 py-2 text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"
                                     >
-                                        Join Channel <ExternalLink className="w-3 h-3" />
-                                    </a>
-                                ) : (
-                                    <button disabled className="w-full py-2 bg-white/5 border border-white/5 rounded-lg text-white/20 text-xs font-bold">Locked</button>
+                                        Upgrade to Unlock →
+                                    </button>
+                                )}
+
+                                {!user.telegramUsername && !user.telegramAccess && user.tier !== 'free' && (
+                                    <button
+                                        onClick={() => window.location.href = '/settings'}
+                                        className="w-full mt-3 py-2 text-[10px] font-black uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors"
+                                    >
+                                        Set Username in Settings →
+                                    </button>
                                 )}
                             </div>
 
-                            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <MessageSquare className="w-4 h-4 text-purple-400" />
-                                    <span className="text-xs font-bold text-white uppercase tracking-wider">Support Bot</span>
+                            <div className={`p-5 rounded-2xl border transition-all ${user.tier === 'tier2' ? 'bg-purple-500/5 border-purple-500/10' : 'bg-white/5 border-white/5 opacity-60'}`}>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${user.tier === 'tier2' ? 'bg-purple-500/20' : 'bg-white/5'}`}>
+                                        <MessageSquare className={`w-4 h-4 ${user.tier === 'tier2' ? 'text-purple-400' : 'text-white/20'}`} />
+                                    </div>
+                                    <span className="text-xs font-black text-white uppercase tracking-widest">Support Bot</span>
                                 </div>
-                                <p className="text-[11px] text-white/40 leading-relaxed mb-4">
-                                    Direct communication with TholviTrader analysts for tier 2 members.
+                                <p className="text-[11px] text-white/40 leading-relaxed mb-6 font-medium">
+                                    Direct communication with TholviTrader analysts for Tier 2 Elite members.
                                 </p>
-                                <a
-                                    href={siteSettings.telegramBotLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="w-full py-2 bg-purple-500/20 border border-purple-500/20 rounded-lg text-purple-400 text-xs font-bold flex items-center justify-center gap-2 hover:bg-purple-500/30 transition-all"
-                                >
-                                    Message Admin <ExternalLink className="w-3 h-3" />
-                                </a>
+                                {user.tier === 'tier2' ? (
+                                    <a
+                                        href={siteSettings.telegramBotLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full py-2 bg-purple-500/20 border border-purple-500/20 rounded-lg text-purple-400 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-purple-500/30 transition-all"
+                                    >
+                                        Message Admin <ExternalLink className="w-3 h-3" />
+                                    </a>
+                                ) : (
+                                    <button
+                                        onClick={() => window.location.href = '/upgrade'}
+                                        className="w-full py-2 bg-white/5 border border-white/5 rounded-lg text-white/20 text-[10px] font-black uppercase tracking-widest"
+                                    >
+                                        Upgrade to Tier 2
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </motion.div>
@@ -116,35 +147,37 @@ export default function MyAccessPage() {
                         ) : (
                             <div className="space-y-3">
                                 {userPayments.map((payment, i) => {
-                                    const status = statusConfig[payment.status];
+                                    const status = statusConfig[payment.status as keyof typeof statusConfig];
                                     return (
                                         <motion.div
                                             key={payment.id}
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ delay: i * 0.05 }}
-                                            className="p-4 rounded-xl bg-[#111113] border border-white/5 flex items-center justify-between group"
+                                            className="p-4 rounded-xl bg-[#111113] border border-white/5 group"
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-                                                    <Shield className="w-5 h-5 text-white/10" />
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-sm font-bold text-white">{payment.tierRequested.toUpperCase()} Upgrade</span>
-                                                        <TierBadge tier={payment.tierRequested} size="sm" />
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
+                                                        <Shield className="w-5 h-5 text-white/10" />
                                                     </div>
-                                                    <p className="text-[10px] text-white/30 font-mono mt-0.5">Hash: {payment.transactionId.slice(0, 16)}...</p>
+                                                    <div className="min-w-0">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="text-sm font-bold text-white whitespace-nowrap">{payment.tierRequested.toUpperCase()} Upgrade</span>
+                                                            <TierBadge tier={payment.tierRequested} size="sm" />
+                                                        </div>
+                                                        <p className="text-[10px] text-white/30 font-mono mt-0.5 truncate uppercase">Hash: {payment.transactionId.slice(0, 16)}...</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${status.bg} ${status.color} border ${status.border}`}>
-                                                    <status.icon className="w-3 h-3" />
-                                                    {status.label}
-                                                </span>
-                                                <p className="text-[10px] text-white/20 mt-1 font-medium italic">
-                                                    {new Date(payment.createdAt).toLocaleDateString()}
-                                                </p>
+                                                <div className="flex items-center sm:flex-col sm:items-end justify-between sm:justify-center gap-2">
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${status.bg} ${status.color} border ${status.border}`}>
+                                                        <status.icon className="w-3 h-3" />
+                                                        {status.label}
+                                                    </span>
+                                                    <p className="text-[10px] text-white/20 font-medium italic">
+                                                        {new Date(payment.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </motion.div>
                                     );

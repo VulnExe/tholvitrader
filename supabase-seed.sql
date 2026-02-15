@@ -87,28 +87,28 @@ WHERE t.title = 'Risk/Reward Analyzer';
 -- ============================================================
 -- STEP 4: Sample Blogs
 -- ============================================================
-INSERT INTO public.blogs (title, content, preview, tier_required, author, read_time, published) VALUES
+-- 1. Insert Metadata
+INSERT INTO public.blogs (id, title, preview, tier_required, author, read_time, published) VALUES
+  ('b1000000-0000-0000-0000-000000000001', 'Top 5 Mistakes New Traders Make', 'Every trader begins their journey with enthusiasm, but many fall into common traps that can be avoided with the right knowledge.', 'free', 'TholviTrader', 5, true),
+  ('b2000000-0000-0000-0000-000000000002', 'Understanding Market Structure', 'Market structure is the foundation of price action trading. Understanding how highs and lows form gives you an edge.', 'tier1', 'TholviTrader', 8, true),
+  ('b3000000-0000-0000-0000-000000000003', 'Advanced Order Flow Analysis', 'Order flow analysis gives you a window into what institutional traders are doing. This advanced technique separates pros from amateurs.', 'tier2', 'TholviTrader', 12, true),
+  ('b4000000-0000-0000-0000-000000000004', 'Building a Profitable Trading Routine', 'A consistent daily routine is what separates successful traders from those who burn out. Here is a proven framework.', 'free', 'TholviTrader', 6, true);
+
+-- 2. Insert Protected Content
+INSERT INTO public.blog_contents (blog_id, body) VALUES
   (
-    'Top 5 Mistakes New Traders Make',
-    E'## Introduction\nEvery trader begins their journey with enthusiasm, but many fall into common traps that can be avoided.\n\n## 1. Trading Without a Plan\nThe most common mistake is entering trades without a clear strategy. A trading plan should include:\n- Entry and exit criteria\n- Risk management rules\n- Position sizing guidelines\n\n## 2. Over-Leveraging\nUsing too much leverage amplifies both gains and losses. Start small and increase position sizes gradually.\n\n## 3. Ignoring Risk Management\nNever risk more than 1-2% of your account on a single trade. This ensures survival through inevitable losing streaks.\n\n## 4. Revenge Trading\nAfter a loss, the urge to immediately recover can lead to poor decisions. Take a break and stick to your plan.\n\n## 5. Not Keeping a Journal\nWithout tracking your trades, you cannot learn from mistakes or identify what works.',
-    'Every trader begins their journey with enthusiasm, but many fall into common traps that can be avoided with the right knowledge.',
-    'free', 'TholviTrader', 5, true
+    'b1000000-0000-0000-0000-000000000001',
+    E'## Introduction\nEvery trader begins their journey with enthusiasm, but many fall into common traps that can be avoided.\n\n## 1. Trading Without a Plan\nThe most common mistake is entering trades without a clear strategy. A trading plan should include:\n- Entry and exit criteria\n- Risk management rules\n- Position sizing guidelines\n\n## 2. Over-Leveraging\nUsing too much leverage amplifies both gains and losses. Start small and increase position sizes gradually.\n\n## 3. Ignoring Risk Management\nNever risk more than 1-2% of your account on a single trade. This ensures survival through inevitable losing streaks.\n\n## 4. Revenge Trading\nAfter a loss, the urge to immediately recover can lead to poor decisions. Take a break and stick to your plan.\n\n## 5. Not Keeping a Journal\nWithout tracking your trades, you cannot learn from mistakes or identify what works.'
   ),
   (
-    'Understanding Market Structure',
-    E'## What is Market Structure?\nMarket structure refers to the pattern of highs and lows that price creates as it moves.\n\n## Bullish Structure\n- Higher Highs (HH)\n- Higher Lows (HL)\n- Indicates upward momentum\n\n## Bearish Structure\n- Lower Highs (LH)\n- Lower Lows (LL)\n- Indicates downward momentum\n\n## Break of Structure (BOS)\nA BOS occurs when price breaks a significant swing point, signaling a potential trend change.\n\n## Key Concepts\n- **Order Blocks** — institutional supply/demand zones\n- **Fair Value Gaps** — inefficiencies in price\n- **Liquidity Pools** — areas where stop losses cluster',
-    'Market structure is the foundation of price action trading. Understanding how highs and lows form gives you an edge.',
-    'tier1', 'TholviTrader', 8, true
+    'b2000000-0000-0000-0000-000000000002',
+    E'## What is Market Structure?\nMarket structure refers to the pattern of highs and lows that price creates as it moves.\n\n## Bullish Structure\n- Higher Highs (HH)\n- Higher Lows (HL)\n- Indicates upward momentum\n\n## Bearish Structure\n- Lower Highs (LH)\n- Lower Lows (LL)\n- Indicates downward momentum\n\n## Break of Structure (BOS)\nA BOS occurs when price breaks a significant swing point, signaling a potential trend change.\n\n## Key Concepts\n- **Order Blocks** — institutional supply/demand zones\n- **Fair Value Gaps** — inefficiencies in price\n- **Liquidity Pools** — areas where stop losses cluster'
   ),
   (
-    'Advanced Order Flow Analysis',
-    E'## What is Order Flow?\nOrder flow analysis examines the actual buy and sell orders in the market to understand institutional activity.\n\n## Key Metrics\n- **Volume Profile** — shows where most trading occurs\n- **Delta** — difference between buying and selling volume\n- **Cumulative Delta** — running total of delta\n- **Footprint Charts** — granular order flow visualization\n\n## How Institutions Trade\nLarge players accumulate positions over time, often leaving footprints in the order flow data.\n\n## Practical Application\n1. Identify absorption at key levels\n2. Monitor aggressive buying/selling\n3. Track institutional positioning\n4. Combine with technical analysis',
-    'Order flow analysis gives you a window into what institutional traders are doing. This advanced technique separates pros from amateurs.',
-    'tier2', 'TholviTrader', 12, true
+    'b3000000-0000-0000-0000-000000000003',
+    E'## What is Order Flow?\nOrder flow analysis examines the actual buy and sell orders in the market to understand institutional activity.\n\n## Key Metrics\n- **Volume Profile** — shows where most trading occurs\n- **Delta** — difference between buying and selling volume\n- **Cumulative Delta** — running total of delta\n- **Footprint Charts** — granular order flow visualization\n\n## How Institutions Trade\nLarge players accumulate positions over time, often leaving footprints in the order flow data.\n\n## Practical Application\n1. Identify absorption at key levels\n2. Monitor aggressive buying/selling\n3. Track institutional positioning\n4. Combine with technical analysis'
   ),
   (
-    'Building a Profitable Trading Routine',
-    E'## Morning Routine\n- Review overnight markets\n- Check economic calendar\n- Identify key levels on daily charts\n- Set alerts for potential setups\n\n## During Market Hours\n- Focus on 2-3 setups maximum\n- No trades in first 15 minutes\n- Follow your trading plan strictly\n\n## End of Day Review\n- Record all trades in journal\n- Screenshot charts with notes\n- Calculate daily P&L\n- Identify what went well and what needs improvement',
-    'A consistent daily routine is what separates successful traders from those who burn out. Here is a proven framework.',
-    'free', 'TholviTrader', 6, true
+    'b4000000-0000-0000-0000-000000000004',
+    E'## Morning Routine\n- Review overnight markets\n- Check economic calendar\n- Identify key levels on daily charts\n- Set alerts for potential setups\n\n## During Market Hours\n- Focus on 2-3 setups maximum\n- No trades in first 15 minutes\n- Follow your trading plan strictly\n\n## End of Day Review\n- Record all trades in journal\n- Screenshot charts with notes\n- Calculate daily P&L\n- Identify what went well and what needs improvement'
   );

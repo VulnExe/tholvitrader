@@ -41,9 +41,7 @@ export default function LoginPage() {
         <div>
             {/* Mobile logo */}
             <div className="lg:hidden text-center mb-8">
-                <h1 className="text-2xl font-bold text-white">
-                    Tholvi<span className="text-purple-400">Trader</span>
-                </h1>
+                <img src="/Tholvitrader.png" alt="TholviTrader" className="h-8 w-auto mx-auto object-contain" />
             </div>
 
             <div className="mb-8">

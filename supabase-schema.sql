@@ -20,18 +20,35 @@ CREATE TABLE public.profiles (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ============================================================
--- 2. HELPER FUNCTIONS
--- ============================================================
-
--- Helper function: check if current user is admin
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
+-- Helper function: get numeric score for tiers
+CREATE OR REPLACE FUNCTION public.get_tier_score(tier TEXT)
+RETURNS INT AS $$
 BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role = 'admin'
-  );
+  RETURN CASE 
+    WHEN tier = 'free' THEN 0
+    WHEN tier = 'tier1' THEN 1
+    WHEN tier = 'tier2' THEN 2
+    ELSE -1
+  END;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- Helper function: check if user can access a specific tier
+CREATE OR REPLACE FUNCTION public.can_access(required_tier TEXT)
+RETURNS BOOLEAN AS $$
+DECLARE
+  user_tier TEXT;
+BEGIN
+  -- Admins have full access
+  IF EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin') THEN
+    RETURN TRUE;
+  END IF;
+  
+  -- Get user tier
+  SELECT tier INTO user_tier FROM public.profiles WHERE id = auth.uid();
+  
+  -- Compare
+  RETURN public.get_tier_score(COALESCE(user_tier, 'free')) >= public.get_tier_score(required_tier);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -66,7 +83,7 @@ CREATE POLICY "Users can view own profile"
 
 CREATE POLICY "Admins can view all profiles"
   ON public.profiles FOR SELECT
-  USING (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 CREATE POLICY "Users can update own profile"
   ON public.profiles FOR UPDATE
@@ -75,7 +92,7 @@ CREATE POLICY "Users can update own profile"
 
 CREATE POLICY "Admins can update all profiles"
   ON public.profiles FOR UPDATE
-  USING (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
 -- 4. COURSES
@@ -94,16 +111,17 @@ CREATE TABLE public.courses (
 
 ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view published courses"
+-- Metadata (titles, descriptions) is public if published
+CREATE POLICY "Anyone can view published courses metadata"
   ON public.courses FOR SELECT
-  USING (published = true OR public.is_admin());
+  USING (published = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 CREATE POLICY "Admins can manage courses"
   ON public.courses FOR ALL
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
--- Course Sections
+-- Course Sections (CONTAINS SENSITIVE CONTENT: PROTECT STRICTLY)
 CREATE TABLE public.course_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
@@ -115,20 +133,21 @@ CREATE TABLE public.course_sections (
 
 ALTER TABLE public.course_sections ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view course sections"
+CREATE POLICY "Tier-protected access to course sections"
   ON public.course_sections FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.courses
       WHERE courses.id = course_sections.course_id
-        AND (courses.published = true OR public.is_admin())
+        AND (courses.published = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+        AND public.can_access(courses.tier_required)
     )
   );
 
 CREATE POLICY "Admins can manage course sections"
   ON public.course_sections FOR ALL
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
 -- 5. TOOLS
@@ -147,16 +166,17 @@ CREATE TABLE public.tools (
 
 ALTER TABLE public.tools ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view published tools"
+-- Metadata is public
+CREATE POLICY "Anyone can view published tools metadata"
   ON public.tools FOR SELECT
-  USING (published = true OR public.is_admin());
+  USING (published = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 CREATE POLICY "Admins can manage tools"
   ON public.tools FOR ALL
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
--- Tool Sections
+-- Tool Sections (PROTECTED)
 CREATE TABLE public.tool_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tool_id UUID NOT NULL REFERENCES public.tools(id) ON DELETE CASCADE,
@@ -168,20 +188,21 @@ CREATE TABLE public.tool_sections (
 
 ALTER TABLE public.tool_sections ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view tool sections"
+CREATE POLICY "Tier-protected access to tool sections"
   ON public.tool_sections FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM public.tools
       WHERE tools.id = tool_sections.tool_id
-        AND (tools.published = true OR public.is_admin())
+        AND (tools.published = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+        AND public.can_access(tools.tier_required)
     )
   );
 
 CREATE POLICY "Admins can manage tool sections"
   ON public.tool_sections FOR ALL
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
 -- 6. BLOGS
@@ -189,7 +210,6 @@ CREATE POLICY "Admins can manage tool sections"
 CREATE TABLE public.blogs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title TEXT NOT NULL,
-  content TEXT NOT NULL DEFAULT '',
   preview TEXT NOT NULL DEFAULT '',
   tier_required TEXT NOT NULL DEFAULT 'free' CHECK (tier_required IN ('free','tier1','tier2')),
   author TEXT NOT NULL DEFAULT 'TholviTrader',
@@ -198,16 +218,41 @@ CREATE TABLE public.blogs (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
-ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
+-- Separate table for sensitive content
+CREATE TABLE public.blog_contents (
+  blog_id UUID PRIMARY KEY REFERENCES public.blogs(id) ON DELETE CASCADE,
+  body TEXT NOT NULL
+);
 
-CREATE POLICY "Anyone can view published blogs"
+ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.blog_contents ENABLE ROW LEVEL SECURITY;
+
+-- Metadata is public if published
+CREATE POLICY "Anyone can view published blog metadata"
   ON public.blogs FOR SELECT
-  USING (published = true OR public.is_admin());
+  USING (published = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- Body is strictly tier-protected
+CREATE POLICY "Tier-protected access to blog body"
+  ON public.blog_contents FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.blogs
+      WHERE blogs.id = blog_contents.blog_id
+        AND (blogs.published = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+        AND public.can_access(blogs.tier_required)
+    )
+  );
 
 CREATE POLICY "Admins can manage blogs"
   ON public.blogs FOR ALL
-  USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+
+CREATE POLICY "Admins can manage blog contents"
+  ON public.blog_contents FOR ALL
+  USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'))
+  WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- ============================================================
 -- 7. PAYMENTS

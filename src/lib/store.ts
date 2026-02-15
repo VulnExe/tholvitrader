@@ -70,6 +70,8 @@ interface AppStore {
         userGrowth: { date: string; count: number }[];
     };
     fetchAdminStats: () => Promise<void>;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
     siteSettings: {
         id: string;
         binanceQrUrl: string;
@@ -112,6 +114,8 @@ export const useStore = create<AppStore>()(
                 conversionRate: 0,
                 userGrowth: []
             },
+            searchQuery: '',
+            setSearchQuery: (query) => set({ searchQuery: query }),
             siteSettings: {
                 id: 'main',
                 binanceQrUrl: '',
@@ -252,7 +256,7 @@ export const useStore = create<AppStore>()(
             fetchCourses: async () => {
                 const { data, error } = await supabase
                     .from('courses')
-                    .select('*, sections:course_sections(*)')
+                    .select('*')
                     .order('created_at', { ascending: false });
 
                 if (data) {
@@ -262,18 +266,11 @@ export const useStore = create<AppStore>()(
                         description: c.description,
                         tierRequired: c.tier_required as UserTier,
                         thumbnailUrl: c.thumbnail_url,
-                        videoCount: c.video_count,
+                        videoCount: c.video_count || 0,
                         published: c.published,
                         createdAt: c.created_at,
                         updatedAt: c.updated_at,
-                        content: c.sections.map((s: any) => ({
-                            id: s.id,
-                            courseId: s.course_id,
-                            title: s.title,
-                            content: s.content,
-                            videoUrl: s.video_url,
-                            orderIndex: s.order_index
-                        })).sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+                        content: [] // No sections in bulk fetch
                     }));
                     set({ courses: mappedCourses });
                 }
@@ -293,7 +290,7 @@ export const useStore = create<AppStore>()(
                         description: data.description,
                         tierRequired: data.tier_required as UserTier,
                         thumbnailUrl: data.thumbnail_url,
-                        videoCount: data.video_count,
+                        videoCount: data.video_count || 0,
                         published: data.published,
                         createdAt: data.created_at,
                         updatedAt: data.updated_at,
@@ -317,6 +314,7 @@ export const useStore = create<AppStore>()(
                         title: courseData.title,
                         description: courseData.description,
                         tier_required: courseData.tierRequired,
+                        thumbnail_url: courseData.thumbnailUrl,
                         published: courseData.published
                     })
                     .select()
@@ -330,6 +328,7 @@ export const useStore = create<AppStore>()(
                     title: data.title,
                     description: data.description,
                     tier_required: data.tierRequired,
+                    thumbnail_url: data.thumbnailUrl,
                     published: data.published,
                     updated_at: new Date().toISOString()
                 }).eq('id', id);
@@ -345,7 +344,7 @@ export const useStore = create<AppStore>()(
             fetchTools: async () => {
                 const { data, error } = await supabase
                     .from('tools')
-                    .select('*, sections:tool_sections(*)')
+                    .select('*')
                     .order('created_at', { ascending: false });
 
                 if (data) {
@@ -355,18 +354,11 @@ export const useStore = create<AppStore>()(
                         description: t.description,
                         tierRequired: t.tier_required as UserTier,
                         thumbnailUrl: t.thumbnail_url,
-                        videoCount: t.video_count,
+                        videoCount: t.video_count || 0,
                         published: t.published,
                         createdAt: t.created_at,
                         updatedAt: t.updated_at,
-                        sections: t.sections.map((s: any) => ({
-                            id: s.id,
-                            toolId: s.tool_id,
-                            title: s.title,
-                            content: s.content,
-                            videoUrl: s.video_url,
-                            orderIndex: s.order_index
-                        })).sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+                        sections: [] // No sections in bulk fetch
                     }));
                     set({ tools: mappedTools });
                 }
@@ -386,7 +378,7 @@ export const useStore = create<AppStore>()(
                         description: data.description,
                         tierRequired: data.tier_required as UserTier,
                         thumbnailUrl: data.thumbnail_url,
-                        videoCount: data.video_count,
+                        videoCount: data.video_count || 0,
                         published: data.published,
                         createdAt: data.created_at,
                         updatedAt: data.updated_at,
@@ -408,6 +400,7 @@ export const useStore = create<AppStore>()(
                     title: toolData.title,
                     description: toolData.description,
                     tier_required: toolData.tierRequired,
+                    thumbnail_url: toolData.thumbnailUrl,
                     published: toolData.published
                 });
                 await get().fetchTools();
@@ -418,6 +411,7 @@ export const useStore = create<AppStore>()(
                     title: data.title,
                     description: data.description,
                     tier_required: data.tierRequired,
+                    thumbnail_url: data.thumbnailUrl,
                     published: data.published,
                     updated_at: new Date().toISOString()
                 }).eq('id', id);
@@ -440,8 +434,9 @@ export const useStore = create<AppStore>()(
                     const mappedBlogs: Blog[] = data.map(b => ({
                         id: b.id,
                         title: b.title,
-                        content: b.content,
+                        content: '', // No content in bulk fetch
                         preview: b.preview,
+                        thumbnailUrl: b.thumbnail_url,
                         tierRequired: b.tier_required as UserTier,
                         author: b.author,
                         readTime: b.read_time,
@@ -453,49 +448,70 @@ export const useStore = create<AppStore>()(
             },
 
             getBlog: async (id) => {
-                const { data, error } = await supabase
+                const { data: blog, error: blogErr } = await supabase
                     .from('blogs')
                     .select('*')
                     .eq('id', id)
                     .single();
 
-                if (data) {
-                    return {
-                        id: data.id,
-                        title: data.title,
-                        content: data.content,
-                        preview: data.preview,
-                        tierRequired: data.tier_required as UserTier,
-                        author: data.author,
-                        readTime: data.read_time,
-                        published: data.published,
-                        createdAt: data.created_at
-                    };
-                }
-                return null;
+                if (!blog) return null;
+
+                // Try to fetch protected content
+                const { data: bodyData } = await supabase
+                    .from('blog_contents')
+                    .select('body')
+                    .eq('blog_id', id)
+                    .single();
+
+                return {
+                    id: blog.id,
+                    title: blog.title,
+                    content: bodyData?.body || '', // Empty if unauthorized
+                    preview: blog.preview,
+                    thumbnailUrl: blog.thumbnail_url,
+                    tierRequired: blog.tier_required as UserTier,
+                    author: blog.author,
+                    readTime: blog.read_time,
+                    published: blog.published,
+                    createdAt: blog.created_at
+                };
             },
 
             addBlog: async (blogData) => {
-                await supabase.from('blogs').insert({
+                const { data, error } = await supabase.from('blogs').insert({
                     title: blogData.title,
-                    content: blogData.content,
                     preview: blogData.preview,
+                    thumbnail_url: blogData.thumbnailUrl,
                     tier_required: blogData.tierRequired,
                     author: blogData.author,
                     read_time: blogData.readTime,
                     published: blogData.published
-                });
+                }).select().single();
+
+                if (data) {
+                    await supabase.from('blog_contents').insert({
+                        blog_id: data.id,
+                        body: blogData.content
+                    });
+                }
                 await get().fetchBlogs();
             },
 
             updateBlog: async (id, data) => {
                 await supabase.from('blogs').update({
                     title: data.title,
-                    content: data.content,
                     preview: data.preview,
+                    thumbnail_url: data.thumbnailUrl,
                     tier_required: data.tierRequired,
                     published: data.published
                 }).eq('id', id);
+
+                if (data.content) {
+                    await supabase.from('blog_contents').upsert({
+                        blog_id: id,
+                        body: data.content
+                    });
+                }
                 await get().fetchBlogs();
             },
 
@@ -688,7 +704,9 @@ export const useStore = create<AppStore>()(
             addSection: async (type, parentId, data) => {
                 const table = type === 'course' ? 'course_sections' : 'tool_sections';
                 const parentCol = type === 'course' ? 'course_id' : 'tool_id';
+                const parentTable = type === 'course' ? 'courses' : 'tools';
 
+                // Insert section
                 await supabase.from(table).insert({
                     [parentCol]: parentId,
                     title: data.title,
@@ -696,6 +714,14 @@ export const useStore = create<AppStore>()(
                     video_url: data.videoUrl,
                     order_index: data.orderIndex || 0
                 });
+
+                // Increment video count
+                const parent = type === 'course' ? get().courses.find(c => c.id === parentId) : get().tools.find(t => t.id === parentId);
+                const currentCount = parent?.videoCount || 0;
+
+                await supabase.from(parentTable)
+                    .update({ video_count: currentCount + 1 })
+                    .eq('id', parentId);
 
                 if (type === 'course') await get().fetchCourses();
                 else await get().fetchTools();
@@ -716,7 +742,25 @@ export const useStore = create<AppStore>()(
 
             deleteSection: async (type, sectionId) => {
                 const table = type === 'course' ? 'course_sections' : 'tool_sections';
+                const parentTable = type === 'course' ? 'courses' : 'tools';
+                const parentCol = type === 'course' ? 'course_id' : 'tool_id';
+
+                // Get parentId before deleting
+                const { data: section } = await supabase.from(table).select(parentCol).eq('id', sectionId).single();
+                const parentId = (section as any)?.[parentCol];
+
+                // Delete
                 await supabase.from(table).delete().eq('id', sectionId);
+
+                // Decrement video count
+                if (parentId) {
+                    const parent = type === 'course' ? get().courses.find(c => c.id === parentId) : get().tools.find(t => t.id === parentId);
+                    const currentCount = Math.max(0, (parent?.videoCount || 1) - 1);
+
+                    await supabase.from(parentTable)
+                        .update({ video_count: currentCount })
+                        .eq('id', parentId);
+                }
 
                 if (type === 'course') await get().fetchCourses();
                 else await get().fetchTools();

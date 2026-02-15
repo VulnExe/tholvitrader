@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "TholviTrader — Premium Trading Knowledge Platform",
   description: "Master the markets with exclusive trading courses, premium blog content, and a community of serious traders. Join TholviTrader today.",
   keywords: ["trading", "courses", "crypto", "forex", "technical analysis", "algorithmic trading"],
+  icons: {
+    icon: "/Tholvitrader.png",
+    shortcut: "/Tholvitrader.png",
+    apple: "/Tholvitrader.png",
+  },
 };
 
 export default function RootLayout({

@@ -95,13 +95,21 @@ export default function AdminUsersPage() {
                                             </select>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => setTelegramAccess(user.id, !user.telegramAccess)}
-                                                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase transition-all ${user.telegramAccess ? 'text-green-400' : 'text-white/20'}`}
-                                            >
-                                                {user.telegramAccess ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
-                                                {user.telegramAccess ? 'Access' : 'No Access'}
-                                            </button>
+                                            <div className="flex flex-col gap-2">
+                                                <button
+                                                    onClick={() => setTelegramAccess(user.id, !user.telegramAccess)}
+                                                    className={`flex items-center gap-1.5 text-[10px] font-bold uppercase transition-all ${user.telegramAccess ? 'text-green-400' : 'text-white/20'}`}
+                                                >
+                                                    {user.telegramAccess ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
+                                                    {user.telegramAccess ? 'Access' : 'No Access'}
+                                                </button>
+                                                {user.telegramUsername && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] text-purple-400/60 font-mono bg-purple-500/5 px-2 py-0.5 rounded-md w-fit border border-purple-500/10">
+                                                        <MessageCircle className="w-3 h-3" />
+                                                        {user.telegramUsername}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className={`w-2 h-2 rounded-full mx-auto ${user.banned ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-green-500/20'}`} />

@@ -203,9 +203,16 @@ export default function CheckoutPage() {
 
                         <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-3">
                             <ShieldCheck className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-                            <p className="text-[11px] text-blue-400/80 leading-relaxed">
-                                Your payment is verified manually by the TholviTrader team. High-priority support members get faster activation.
-                            </p>
+                            <div className="flex-1">
+                                <p className="text-[11px] text-blue-400/80 leading-relaxed font-medium">
+                                    Your payment is verified manually by the team.
+                                </p>
+                                {!user?.telegramUsername && (
+                                    <p className="text-[10px] text-red-400 mt-2 font-black uppercase tracking-wider bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/10">
+                                        ⚠️ Action Required: Please set your Telegram @username in <button onClick={() => router.push('/settings')} className="underline">Settings</button> so we can add you to the group.
+                                    </p>
+                                )}
+                            </div>
                         </div>
                     </div>
 

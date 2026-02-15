@@ -12,12 +12,7 @@ export default function HomePage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050507]/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-white text-lg tracking-tight">
-              Tholvi<span className="text-purple-400">Trader</span>
-            </span>
+            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-9 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-6">
             <Link href="#pricing" className="text-sm text-white/50 hover:text-white transition-colors hidden md:block">
@@ -360,10 +355,8 @@ export default function HomePage() {
       <footer className="border-t border-white/5 py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-sm text-white/40">TholviTrader © 2025. All rights reserved.</span>
+            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-6 w-auto opacity-50 hover:opacity-100 transition-opacity" />
+            <span className="text-sm text-white/40 ml-2">TholviTrader © 2025. All rights reserved.</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-white/30">
             <Link href="#" className="hover:text-white/60 transition-colors">Privacy</Link>

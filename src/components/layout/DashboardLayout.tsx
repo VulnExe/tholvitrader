@@ -16,6 +16,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -69,9 +70,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     return (
         <div className="min-h-screen bg-[#050507] flex">
-            <Sidebar />
+            <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
             <div className="flex-1 flex flex-col min-w-0">
-                <Topbar />
+                <Topbar setMobileOpen={setMobileOpen} />
                 <main className="flex-1 overflow-y-auto p-4 md:p-8">
                     {children}
                 </main>

@@ -128,14 +128,14 @@ export default function UpgradePage() {
                     transition={{ delay: 0.5 }}
                 >
                     <h3 className="text-sm font-bold text-white/20 uppercase tracking-[0.2em] text-center mb-8">Detailed Comparison</h3>
-                    <div className="rounded-3xl border border-white/5 bg-[#0a0a0c] overflow-hidden">
-                        <table className="w-full text-sm border-collapse">
+                    <div className="rounded-3xl border border-white/5 bg-[#0a0a0c] overflow-hidden overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-sm border-collapse min-w-[600px]">
                             <thead>
                                 <tr className="bg-white/[0.02]">
-                                    <th className="text-left p-6 text-white/40 font-bold uppercase tracking-wider">Capabilities</th>
-                                    <th className="text-center p-6 text-white/40 font-bold uppercase tracking-wider">Free</th>
-                                    <th className="text-center p-6 text-purple-400 font-bold uppercase tracking-wider">Pro</th>
-                                    <th className="text-center p-6 text-blue-400 font-bold uppercase tracking-wider">Elite</th>
+                                    <th className="text-left p-4 md:p-6 text-white/40 font-bold uppercase tracking-wider">Capabilities</th>
+                                    <th className="text-center p-4 md:p-6 text-white/40 font-bold uppercase tracking-wider">Free</th>
+                                    <th className="text-center p-4 md:p-6 text-purple-400 font-bold uppercase tracking-wider">Pro</th>
+                                    <th className="text-center p-4 md:p-6 text-blue-400 font-bold uppercase tracking-wider">Elite</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -74,97 +74,82 @@ export default function SettingsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="p-6 rounded-xl bg-[#111113] border border-white/5 mb-6"
+                    className="p-8 rounded-2xl bg-[#111113] border border-white/5 mb-6 shadow-2xl shadow-black/50"
                 >
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <User className="w-4 h-4 text-blue-400" />
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                            <User className="w-5 h-5 text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="text-white font-semibold">Profile</h2>
-                            <p className="text-xs text-white/30">Update your personal information</p>
+                            <h2 className="text-lg font-bold text-white tracking-tight">Identity & Connectivity</h2>
+                            <p className="text-xs text-white/30 font-medium">Manage how you appear and how we reach you.</p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleProfileSave} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-white/50 mb-2">Full Name</label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all text-sm"
-                            />
+                    <form onSubmit={handleProfileSave} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-bold text-white/40 mb-2 uppercase tracking-widest">Full Name</label>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Your Name"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-white/40 mb-2 uppercase tracking-widest">Telegram Handle</label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={telegramUsername}
+                                        onChange={(e) => setTelegramUsername(e.target.value)}
+                                        placeholder="@username"
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all text-sm"
+                                    />
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                        <MessageCircle className={`w-4 h-4 ${telegramUsername ? 'text-purple-400' : 'text-white/10'}`} />
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-white/20 mt-2 font-medium">Admins will use this to add you manually to the private group.</p>
+                            </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-white/50 mb-2">Email</label>
+                            <label className="block text-xs font-bold text-white/40 mb-2 uppercase tracking-widest">Email Address</label>
                             <input
                                 type="email"
                                 value={user.email}
                                 disabled
-                                className="w-full px-4 py-3 bg-white/[0.02] border border-white/5 rounded-xl text-white/30 text-sm cursor-not-allowed"
+                                className="w-full px-4 py-3 bg-white/[0.02] border border-white/5 rounded-xl text-white/30 text-sm cursor-not-allowed font-medium"
                             />
-                            <p className="text-[10px] text-white/20 mt-1">Email cannot be changed</p>
+                            <p className="text-[10px] text-white/20 mt-1 font-medium">Contact support to modify your registered email.</p>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-white/50 mb-2">Current Tier</label>
-                            <div className="flex items-center gap-2">
-                                <TierBadge tier={user.tier} size="md" />
+                        <div className="flex items-center justify-between py-4 border-t border-white/5">
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Telegram Integration:</span>
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.telegramAccess ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-white/20 border border-white/5'}`}>
+                                    {user.telegramAccess ? 'Active' : 'Awaiting Approval'}
+                                </span>
                             </div>
-                        </div>
 
-                        <button
-                            type="submit"
-                            disabled={profileSaving}
-                            className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 transition-all"
-                        >
-                            {profileSaving ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : profileSaved ? (
-                                <CheckCircle className="w-4 h-4 text-green-400" />
-                            ) : null}
-                            {profileSaved ? 'Saved!' : 'Save Changes'}
-                        </button>
+                            <button
+                                type="submit"
+                                disabled={profileSaving}
+                                className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white text-xs font-black uppercase tracking-widest flex items-center gap-2 hover:shadow-2xl hover:shadow-purple-500/30 disabled:opacity-50 transition-all active:scale-95"
+                            >
+                                {profileSaving ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : profileSaved ? (
+                                    <CheckCircle className="w-4 h-4 text-green-400" />
+                                ) : null}
+                                {profileSaved ? 'Profile Updated' : 'Save Changes'}
+                            </button>
+                        </div>
                     </form>
-                </motion.div>
-
-                {/* Telegram Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.1 }}
-                    className="p-6 rounded-xl bg-[#111113] border border-white/5 mb-6"
-                >
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                            <MessageCircle className="w-4 h-4 text-blue-400" />
-                        </div>
-                        <div>
-                            <h2 className="text-white font-semibold">Telegram</h2>
-                            <p className="text-xs text-white/30">Link your Telegram account for community access</p>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-white/50 mb-2">Telegram Username</label>
-                        <input
-                            type="text"
-                            value={telegramUsername}
-                            onChange={(e) => setTelegramUsername(e.target.value)}
-                            placeholder="@yourusername"
-                            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all text-sm"
-                        />
-                        <p className="text-[10px] text-white/20 mt-1">Enter your Telegram username to get added to the channel after payment approval</p>
-                    </div>
-
-                    <div className="mt-4 flex items-center gap-3">
-                        <span className="text-sm text-white/40">Access Status:</span>
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${user.telegramAccess ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-white/30 border border-white/5'}`}>
-                            {user.telegramAccess ? '✓ Active' : 'Not Active'}
-                        </span>
-                    </div>
                 </motion.div>
 
                 {/* Password Section */}
