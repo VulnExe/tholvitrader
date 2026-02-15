@@ -29,9 +29,9 @@ export default function UpgradePage() {
                         <Sparkles className="w-4 h-4" />
                         Ascend to Elite Trading
                     </motion.div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Choose Your Edge</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">Access Institutional Assets</h1>
                     <p className="text-white/40 max-w-lg mx-auto leading-relaxed">
-                        Unlock premium strategies, institutional-grade tools, and join the elite circle of TholviTrader members.
+                        Unlock restricted crack tools, full bundles of premium courses, and join the exclusive Telegram community.
                     </p>
                 </div>
 
@@ -87,8 +87,8 @@ export default function UpgradePage() {
                                     <TierBadge tier={tier.id} size="md" />
                                     <h3 className="text-xl font-bold text-white mt-4">{tier.name}</h3>
                                     <div className="flex items-baseline gap-1 mt-2">
-                                        <span className="text-3xl font-black text-white">{tier.price}</span>
-                                        <span className="text-xs text-white/30 font-medium">USDT</span>
+                                        <span className="text-3xl font-black text-white">${tier.price}</span>
+                                        {tier.id !== 'free' && <span className="text-xs text-white/30 font-medium">USD</span>}
                                     </div>
                                 </div>
 

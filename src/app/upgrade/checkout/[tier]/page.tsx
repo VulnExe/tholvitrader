@@ -113,8 +113,8 @@ export default function CheckoutPage() {
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-4">Payment Submitted!</h1>
                     <p className="text-white/40 mb-8">
-                        Your payment is now being reviewed by our team. This usually takes 1-6 hours.
-                        You will receive a notification once your access is upgraded.
+                        Your payment is now being reviewed. This usually takes 1-6 hours.
+                        Once approved, your access will be upgraded and all restricted Crack Tools and Course Bundle links will be sent to your Telegram.
                     </p>
                     <button
                         onClick={() => router.push('/dashboard')}
@@ -147,16 +147,16 @@ export default function CheckoutPage() {
 
                         <div className="p-6 rounded-2xl bg-[#111113] border border-white/5 space-y-6">
                             <div className="flex items-center justify-between p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
-                                <span className="text-sm text-white/60">Amount to Pay</span>
-                                <span className="text-xl font-bold text-white">{tierInfo.price} USDT</span>
+                                <span className="text-sm text-white/60">Total to Pay</span>
+                                <span className="text-xl font-bold text-white">${tierInfo.price} USD</span>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="flex items-start gap-4">
                                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 font-bold text-xs text-white/40">1</div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-semibold text-white">Scan QR or Copy Binance ID</p>
-                                        <p className="text-xs text-white/30 mt-1 mb-4">Pay using Binance App for instant verification.</p>
+                                        <p className="text-sm font-semibold text-white">Scan QR or Copy ID</p>
+                                        <p className="text-xs text-white/30 mt-1 mb-4">Pay via Binance or Crypto Wallet. Institutional assets delivered after verification.</p>
 
                                         {siteSettings.binanceQrUrl && (
                                             <div className="mb-4 space-y-3">
@@ -190,11 +190,11 @@ export default function CheckoutPage() {
                                 <div className="flex items-start gap-4 pt-4 border-t border-white/5">
                                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 font-bold text-xs text-white/40">2</div>
                                     <div className="flex-1">
-                                        <p className="text-sm font-semibold text-white">Important Instructions</p>
+                                        <p className="text-sm font-semibold text-white">Verification Steps</p>
                                         <ul className="text-xs text-white/30 mt-2 space-y-2 list-disc ml-4">
-                                            <li>Ensure you send <strong className="text-white">EXACTLY {tierInfo.price} USDT</strong>.</li>
-                                            <li>Use <strong className="text-white">Binance Pay</strong> for fastest processing.</li>
-                                            <li>Take a screenshot of the successful payment confirmation.</li>
+                                            <li>Send <strong className="text-white">EXACTLY ${tierInfo.price} USD (USDT/USDC)</strong>.</li>
+                                            <li>Include your username in the payment notes if possible.</li>
+                                            <li>Screenshot of the successful transaction is MANDATORY.</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -205,11 +205,11 @@ export default function CheckoutPage() {
                             <ShieldCheck className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
                             <div className="flex-1">
                                 <p className="text-[11px] text-blue-400/80 leading-relaxed font-medium">
-                                    Your payment is verified manually by the team.
+                                    Verification is manual. Your Crack Tools & Course Bundles package will be sent via Telegram.
                                 </p>
                                 {!user?.telegramUsername && (
                                     <p className="text-[10px] text-red-400 mt-2 font-black uppercase tracking-wider bg-red-500/10 px-3 py-2 rounded-lg border border-red-500/10">
-                                        ⚠️ Action Required: Please set your Telegram @username in <button onClick={() => router.push('/settings')} className="underline">Settings</button> so we can add you to the group.
+                                        ⚠️ Action Required: Set your Telegram @username in <button onClick={() => router.push('/settings')} className="underline">Settings</button> to receive your bundles.
                                     </p>
                                 )}
                             </div>

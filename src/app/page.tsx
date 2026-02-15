@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Zap, Shield, BookOpen, TrendingUp, Star, Lock, ChevronRight } from 'lucide-react';
+import { ArrowRight, Zap, Shield, BookOpen, TrendingUp, Star, Lock, ChevronRight, Wrench } from 'lucide-react';
 import { TIER_DATA, TIER_COMPARISON } from '@/lib/tierSystem';
 import { motion } from 'framer-motion';
 
@@ -10,9 +10,9 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#050507] overflow-hidden">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050507]/80 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-9 w-auto object-contain" />
+            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-16 md:h-20 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-6">
             <Link href="#pricing" className="text-sm text-white/50 hover:text-white transition-colors hidden md:block">
@@ -32,7 +32,7 @@ export default function HomePage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6">
+      <section className="relative pt-40 pb-20 px-6">
         {/* Background Effects */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-purple-600/20 via-blue-600/10 to-transparent rounded-full blur-3xl" />
@@ -46,8 +46,8 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-6">
-              <Star className="w-3.5 h-3.5" />
-              EXCLUSIVE TRADING COMMUNITY
+              <Zap className="w-3.5 h-3.5" />
+              CRACK TOOLS & PREMIUM BUNDLES
             </div>
           </motion.div>
 
@@ -57,9 +57,9 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-5xl md:text-7xl font-bold text-white leading-tight"
           >
-            Master the Markets
+            Level Up Your
             <br />
-            <span className="text-gradient">Like a Pro</span>
+            <span className="text-gradient">Trading Edge</span>
           </motion.h1>
 
           <motion.p
@@ -68,8 +68,8 @@ export default function HomePage() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-6 text-lg text-white/50 max-w-2xl mx-auto leading-relaxed"
           >
-            Premium trading courses, exclusive market insights, and a community of
-            serious traders. Unlock the knowledge that separates the 10% from the rest.
+            Get access to exclusive crack tools, full bundles of trading courses, and
+            private community insights. All premium content delivered directly via Telegram.
           </motion.p>
 
           <motion.div
@@ -82,14 +82,14 @@ export default function HomePage() {
               href="/auth/signup"
               className="group px-8 py-3.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-medium flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:-translate-y-0.5"
             >
-              Start Learning Free
+              Start for Free
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
               href="#pricing"
               className="px-8 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white/70 font-medium hover:bg-white/10 transition-all"
             >
-              View Plans
+              Check Pricing
             </Link>
           </motion.div>
 
@@ -101,9 +101,8 @@ export default function HomePage() {
             className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto"
           >
             {[
-              { value: '5+', label: 'Premium Courses' },
-              { value: '100+', label: 'Trading Lessons' },
-              { value: '500+', label: 'Active Traders' },
+              { value: '10+', label: 'Crack Tools' },
+              { value: '25+', label: 'Full Bundles' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
                 <p className="text-3xl font-bold text-white">{stat.value}</p>
@@ -119,99 +118,130 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Everything You Need to
-              <span className="text-gradient"> Succeed</span>
+              Core Trading
+              <span className="text-gradient"> Solutions</span>
             </h2>
             <p className="mt-4 text-white/40 max-w-lg mx-auto">
-              From beginner fundamentals to advanced quantitative strategies — all in one platform.
+              Everything from automated crack tools to comprehensive educational bundles.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
               {
-                icon: BookOpen,
-                title: 'Premium Courses',
-                desc: 'Structured learning paths from basics to advanced trading',
+                icon: Wrench,
+                title: 'Crack Tools',
+                desc: 'Access highly effective trading software and crack tools for professional analysis.',
                 color: 'from-blue-500/20 to-blue-600/5',
                 borderColor: 'border-blue-500/20',
               },
               {
-                icon: TrendingUp,
-                title: 'Market Analysis',
-                desc: 'Expert blog posts with actionable trading insights',
+                icon: BookOpen,
+                title: 'Full Bundles',
+                desc: 'Complete course bundles covering every aspect of market mastery in depth.',
                 color: 'from-green-500/20 to-green-600/5',
                 borderColor: 'border-green-500/20',
               },
               {
-                icon: Shield,
-                title: 'Exclusive Access',
-                desc: 'Tiered content system with premium-only materials',
+                icon: Zap,
+                title: 'Telegram Delivery',
+                desc: 'Premium content and tools links are delivered straight to your exclusive Telegram.',
                 color: 'from-purple-500/20 to-purple-600/5',
                 borderColor: 'border-purple-500/20',
               },
               {
-                icon: Zap,
-                title: 'Live Community',
-                desc: 'Telegram group access for real-time trading discussion',
+                icon: Shield,
+                title: 'Secure Access',
+                desc: 'Private verified access to restricted trading resources and software.',
                 color: 'from-orange-500/20 to-orange-600/5',
                 borderColor: 'border-orange-500/20',
               },
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className={`p-6 rounded-xl bg-gradient-to-b ${feature.color} border ${feature.borderColor} hover-lift`}
-              >
-                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center mb-4">
-                  <feature.icon className="w-5 h-5 text-white/70" />
-                </div>
-                <h3 className="text-white font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-white/40">{feature.desc}</p>
-              </motion.div>
-            ))}
+            ].map((feature, i) => {
+              const Wrench = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>;
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className={`p-6 rounded-xl bg-gradient-to-b ${feature.color} border ${feature.borderColor} hover-lift`}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center mb-4">
+                    <Icon className="w-5 h-5 text-white/70" />
+                  </div>
+                  <h3 className="text-white font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-sm text-white/40">{feature.desc}</p>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* Blurred Content Preview — Psychological Trigger */}
+      {/* Restricted Assets Section */}
       <section className="py-20 px-6 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent" />
-        <div className="max-w-6xl mx-auto relative">
+        <div className="max-w-7xl mx-auto relative">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-white">
-              See What You&apos;re <span className="text-gradient">Missing</span>
+              Institutional <span className="text-gradient">Assets</span>
             </h2>
-            <p className="mt-3 text-white/40">Premium content locked behind our membership tiers</p>
+            <p className="mt-3 text-white/40">Exclusive crack tools and bundles delivered via premium channels</p>
           </div>
 
-          {/* Blurred preview cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { title: 'Advanced Algo Trading Masterclass', tier: 'TIER 2' },
-              { title: 'Live Market Analysis Session', tier: 'TIER 1' },
-              { title: 'Exclusive Trading Signals Setup', tier: 'TIER 2' },
+              {
+                title: 'Bookmap Crack',
+                tier: 'TIER 2',
+                desc: 'Full institutional order book visualization tool.',
+                image: '/Bookmap.png'
+              },
+              {
+                title: 'Order Flow Crack',
+                tier: 'TIER 2',
+                desc: 'Advanced footprint and tape analysis software.',
+                image: '/orderflow.png'
+              },
+              {
+                title: 'BigTrades Crack',
+                tier: 'TIER 2',
+                desc: 'Detect and visualize aggressive institutional large orders.',
+                image: '/BigTrades.png'
+              },
+              {
+                title: 'Custom Volume Profile',
+                tier: 'TIER 1',
+                desc: 'Merged Market and Volume profile for structural analysis.',
+                image: '/Volume profile and market profile.png'
+              },
             ].map((item, i) => (
-              <div key={i} className="relative group">
-                <div className="p-6 rounded-xl bg-white/[0.02] border border-white/5 filter blur-[2px] select-none">
-                  <div className="h-32 bg-gradient-to-br from-purple-500/10 to-blue-500/10 rounded-lg mb-4" />
-                  <h3 className="text-white font-medium">{item.title}</h3>
-                  <p className="text-sm text-white/30 mt-2">Lorem ipsum dolor sit amet consectetur adipisicing</p>
-                </div>
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 rounded-xl">
-                  <Lock className="w-8 h-8 text-white/50 mb-3" />
-                  <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-xs text-purple-300 font-medium">
-                    {item.tier} ONLY
-                  </span>
-                  <Link
-                    href="/auth/signup"
-                    className="mt-3 text-sm text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
-                  >
-                    Unlock Now <ChevronRight className="w-3 h-3" />
-                  </Link>
+              <div key={i} className="group h-full flex flex-col">
+                <div className="p-6 rounded-xl bg-white/[0.02] border border-white/5 h-full flex flex-col transition-all duration-300 group-hover:bg-white/[0.04] group-hover:border-white/10">
+                  <div className="h-32 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden shrink-0 bg-[#050507]">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#050507] via-transparent to-transparent opacity-60" />
+                  </div>
+                  <h3 className="text-white font-bold text-lg mb-2">{item.title}</h3>
+                  <p className="text-xs text-white/40 leading-relaxed mb-8 flex-1">{item.desc}</p>
+
+                  <div className="pt-6 border-t border-white/5 flex flex-col items-center justify-center gap-3">
+                    <span className="px-3 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full text-[10px] text-purple-300 font-black uppercase tracking-widest">
+                      {item.tier} ONLY
+                    </span>
+                    <Link
+                      href="/auth/signup"
+                      className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-all font-bold"
+                    >
+                      Unlock Now <ChevronRight className="w-3 h-3" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}
@@ -224,9 +254,9 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-white">
-              Choose Your <span className="text-gradient">Trading Level</span>
+              Subscription <span className="text-gradient">Tiers</span>
             </h2>
-            <p className="mt-4 text-white/40">Invest in your trading education. Cancel anytime.</p>
+            <p className="mt-4 text-white/40">Get instant access to tools and full bundles today.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -246,12 +276,15 @@ export default function HomePage() {
               >
                 {tier.highlighted && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs text-white font-bold uppercase tracking-wider">
-                    Most Popular
+                    Recommended
                   </div>
                 )}
 
                 <h3 className="text-lg font-semibold text-white">{tier.name}</h3>
-                <p className="text-3xl font-bold text-white mt-3">{tier.price}</p>
+                <div className="flex items-baseline gap-1 mt-3">
+                  <span className="text-3xl font-bold text-white">${tier.price}</span>
+                  {tier.id !== 'free' && <span className="text-white/40 text-sm">/one-time</span>}
+                </div>
 
                 <ul className="mt-6 space-y-3">
                   {tier.features.map((f, j) => (
@@ -275,7 +308,7 @@ export default function HomePage() {
                       : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'}
                   `}
                 >
-                  {tier.id === 'free' ? 'Get Started Free' : `Upgrade to ${tier.name}`}
+                  {tier.id === 'free' ? 'Get Started Free' : `Get ${tier.name}`}
                 </Link>
               </motion.div>
             ))}
@@ -285,22 +318,22 @@ export default function HomePage() {
 
       {/* Feature Comparison */}
       <section className="py-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl font-bold text-white text-center mb-8">Feature Comparison</h3>
-          <div className="rounded-xl border border-white/5 overflow-hidden">
-            <table className="w-full text-sm">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-xl font-bold text-white mb-8">Access Matrix</h3>
+          <div className="rounded-xl border border-white/5 overflow-hidden overflow-x-auto">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="bg-white/[0.02]">
                   <th className="text-left p-4 text-white/40 font-medium">Feature</th>
                   <th className="text-center p-4 text-white/40 font-medium">Free</th>
-                  <th className="text-center p-4 text-purple-400 font-medium">Tier 1</th>
-                  <th className="text-center p-4 text-purple-400 font-medium">Tier 2</th>
+                  <th className="text-center p-4 text-purple-400 font-medium">Tier 1 ($30)</th>
+                  <th className="text-center p-4 text-purple-400 font-medium">Tier 2 ($55)</th>
                 </tr>
               </thead>
               <tbody>
                 {TIER_COMPARISON.map((row, i) => (
                   <tr key={i} className="border-t border-white/5">
-                    <td className="p-4 text-white/60">{row.feature}</td>
+                    <td className="p-4 text-white/60 text-left">{row.feature}</td>
                     <td className="p-4 text-center">
                       {row.free ? (
                         <span className="text-green-400">✓</span>
@@ -327,6 +360,7 @@ export default function HomePage() {
               </tbody>
             </table>
           </div>
+          <p className="mt-6 text-xs text-white/30 italic">* All premium content delivered via verified Telegram after payment verification.</p>
         </div>
       </section>
 
@@ -338,13 +372,13 @@ export default function HomePage() {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl" />
             </div>
             <div className="relative">
-              <h2 className="text-3xl font-bold text-white">Ready to Level Up?</h2>
-              <p className="mt-3 text-white/50">Join the community of traders who take their edge seriously.</p>
+              <h2 className="text-3xl font-bold text-white">Start Your Journey</h2>
+              <p className="mt-3 text-white/50">Gain access to the tools and bundles that give you the ultimate edge.</p>
               <Link
                 href="/auth/signup"
                 className="inline-flex items-center gap-2 mt-8 px-8 py-3.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:-translate-y-0.5"
               >
-                Create Free Account <ArrowRight className="w-4 h-4" />
+                Join Now <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -352,16 +386,20 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-8 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-6 w-auto opacity-50 hover:opacity-100 transition-opacity" />
-            <span className="text-sm text-white/40 ml-2">TholviTrader © 2025. All rights reserved.</span>
+      <footer className="border-t border-white/5 py-12 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
+            <Link href="/" className="flex items-center gap-2">
+              <img src="/Tholvitrader.png" alt="TholviTrader" className="h-10 md:h-12 w-auto" />
+            </Link>
+            <div className="flex items-center gap-8 text-sm text-white/30 font-medium">
+              <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+              <Link href="#" className="hover:text-white transition-colors">Contact Support</Link>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm text-white/30">
-            <Link href="#" className="hover:text-white/60 transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-white/60 transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-white/60 transition-colors">Contact</Link>
+          <div className="pt-8 border-t border-white/5 text-center md:text-left">
+            <p className="text-sm text-white/20">TholviTrader © 2025. Institutional assets and professional bundles. Not financial advice.</p>
           </div>
         </div>
       </footer>

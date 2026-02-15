@@ -73,14 +73,14 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                 `}
             >
                 {/* Logo Area */}
-                <div className="px-5 h-16 flex items-center justify-between border-b border-white/5">
+                <div className="px-5 h-24 flex items-center justify-between border-b border-white/5">
                     {!collapsed && (
                         <Link href="/dashboard" className="flex items-center gap-2.5">
-                            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-8 w-auto object-contain" />
+                            <img src="/Tholvitrader.png" alt="TholviTrader" className="h-14 w-auto object-contain" />
                         </Link>
                     )}
                     {collapsed && (
-                        <img src="/Tholvitrader.png" alt="Logo" className="w-8 h-8 object-contain mx-auto" />
+                        <img src="/Tholvitrader.png" alt="Logo" className="w-10 h-10 object-contain mx-auto" />
                     )}
 
                     <div className="flex items-center gap-2">

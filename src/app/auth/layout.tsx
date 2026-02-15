@@ -2,7 +2,7 @@
 
 import { ReactNode } from 'react';
 import Link from 'next/link';
-import { Zap, TrendingUp, Shield, BarChart3 } from 'lucide-react';
+import { Zap, Wrench, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
@@ -24,7 +24,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 <div className="relative z-10 flex flex-col justify-between p-12 w-full">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2.5">
-                        <img src="/Tholvitrader.png" alt="TholviTrader" className="h-10 w-auto object-contain" />
+                        <img src="/Tholvitrader.png" alt="TholviTrader" className="h-16 w-auto object-contain" />
                     </Link>
 
                     {/* Tagline */}
@@ -35,9 +35,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                             transition={{ duration: 0.6 }}
                             className="text-4xl font-bold text-white leading-tight"
                         >
-                            Trade Smarter,
+                            Institutional Assets,
                             <br />
-                            <span className="text-gradient">Not Harder.</span>
+                            <span className="text-gradient">Professional Edge.</span>
                         </motion.h2>
                         <motion.p
                             initial={{ opacity: 0, x: -20 }}
@@ -45,8 +45,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                             transition={{ duration: 0.6, delay: 0.1 }}
                             className="mt-4 text-white/40 leading-relaxed"
                         >
-                            Access premium trading courses, exclusive market analysis,
-                            and join a community of serious traders.
+                            Access premium crack tools, full bundles of trading courses,
+                            and join an exclusive community. Premium content delivered via Telegram.
                         </motion.p>
 
                         {/* Feature pills */}
@@ -57,9 +57,9 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                             className="mt-8 space-y-3"
                         >
                             {[
-                                { icon: TrendingUp, text: 'Pro-level trading courses' },
-                                { icon: Shield, text: 'Exclusive tier-based content' },
-                                { icon: BarChart3, text: 'Real market analysis & insights' },
+                                { icon: Wrench, text: 'Restricted Crack Tools' },
+                                { icon: BookOpen, text: 'Full Course Bundles' },
+                                { icon: Zap, text: 'Private Telegram Delivery' },
                             ].map((item, i) => (
                                 <div key={i} className="flex items-center gap-3 text-sm text-white/50">
                                     <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
