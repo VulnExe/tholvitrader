@@ -1,0 +1,640 @@
+'use client';
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { User, Payment, Course, Blog, Tool, UserTier, PaymentStatus, Notification } from './types';
+import { supabase } from './supabase';
+
+interface AppStore {
+    // Auth
+    user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    signup: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
+    logout: () => void;
+    updateProfile: (data: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+    changePassword: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+    checkAuth: () => Promise<void>;
+
+    // Courses
+    courses: Course[];
+    fetchCourses: () => Promise<void>;
+    getCourse: (id: string) => Promise<Course | null>;
+    addCourse: (course: any) => Promise<void>;
+    updateCourse: (id: string, data: Partial<Course>) => Promise<void>;
+    deleteCourse: (id: string) => Promise<void>;
+
+    // Tools
+    tools: Tool[];
+    fetchTools: () => Promise<void>;
+    getTool: (id: string) => Promise<Tool | null>;
+    addTool: (tool: any) => Promise<void>;
+    updateTool: (id: string, data: Partial<Tool>) => Promise<void>;
+    deleteTool: (id: string) => Promise<void>;
+
+    // Blogs
+    blogs: Blog[];
+    fetchBlogs: () => Promise<void>;
+    getBlog: (id: string) => Promise<Blog | null>;
+    addBlog: (blog: any) => Promise<void>;
+    updateBlog: (id: string, data: Partial<Blog>) => Promise<void>;
+    deleteBlog: (id: string) => Promise<void>;
+
+    // Payments
+    payments: Payment[];
+    fetchPayments: () => Promise<void>;
+    submitPayment: (tierRequested: UserTier, transactionId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
+    reviewPayment: (paymentId: string, status: PaymentStatus, rejectionReason?: string) => Promise<void>;
+
+    // Users Admin
+    allUsers: User[];
+    fetchAllUsers: () => Promise<void>;
+    updateUserTier: (userId: string, tier: UserTier) => Promise<void>;
+    banUser: (userId: string) => Promise<void>;
+    unbanUser: (userId: string) => Promise<void>;
+    setTelegramAccess: (userId: string, access: boolean) => Promise<void>;
+
+    // Notifications
+    notifications: Notification[];
+    fetchNotifications: () => Promise<void>;
+    markNotificationRead: (id: string) => Promise<void>;
+
+    // Admin Stats
+    adminStats: {
+        totalUsers: number;
+        freeUsers: number;
+        tier1Users: number;
+        tier2Users: number;
+        conversionRate: number;
+        userGrowth: { date: string; count: number }[];
+    };
+    fetchAdminStats: () => Promise<void>;
+}
+
+export const useStore = create<AppStore>()(
+    persist(
+        (set, get) => ({
+            // Initial Auth State
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+
+            // Initial Data State
+            courses: [],
+            tools: [],
+            blogs: [],
+            payments: [],
+            allUsers: [],
+            notifications: [],
+            adminStats: {
+                totalUsers: 0,
+                freeUsers: 0,
+                tier1Users: 0,
+                tier2Users: 0,
+                conversionRate: 0,
+                userGrowth: []
+            },
+
+            // Auth Actions
+            checkAuth: async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (profile) {
+                        set({
+                            user: {
+                                id: profile.id,
+                                email: profile.email,
+                                name: profile.name,
+                                tier: profile.tier as UserTier,
+                                role: profile.role,
+                                telegramUsername: profile.telegram_username,
+                                telegramAccess: profile.telegram_access,
+                                banned: profile.banned,
+                                createdAt: profile.created_at,
+                                updatedAt: profile.updated_at
+                            },
+                            isAuthenticated: true
+                        });
+                    }
+                }
+            },
+
+            login: async (email, password) => {
+                set({ isLoading: true });
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    set({ isLoading: false });
+                    return { success: false, error: error.message };
+                }
+
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profile?.banned) {
+                    await supabase.auth.signOut();
+                    set({ isLoading: false });
+                    return { success: false, error: 'Your account has been suspended.' };
+                }
+
+                if (profile) {
+                    set({
+                        user: {
+                            id: profile.id,
+                            email: profile.email,
+                            name: profile.name,
+                            tier: profile.tier as UserTier,
+                            role: profile.role,
+                            telegramUsername: profile.telegram_username,
+                            telegramAccess: profile.telegram_access,
+                            banned: profile.banned,
+                            createdAt: profile.created_at,
+                            updatedAt: profile.updated_at
+                        },
+                        isAuthenticated: true,
+                        isLoading: false
+                    });
+                    return { success: true };
+                }
+
+                set({ isLoading: false });
+                return { success: false, error: 'Profile not found.' };
+            },
+
+            signup: async (email, password, name) => {
+                set({ isLoading: true });
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { name } }
+                });
+
+                if (error) {
+                    set({ isLoading: false });
+                    return { success: false, error: error.message };
+                }
+
+                if (data.user) {
+                    set({ isLoading: false });
+                    return { success: true };
+                }
+
+                set({ isLoading: false });
+                return { success: false, error: 'Signup failed.' };
+            },
+
+            logout: async () => {
+                await supabase.auth.signOut();
+                set({ user: null, isAuthenticated: false });
+            },
+
+            updateProfile: async (data) => {
+                const { user } = get();
+                if (!user) return { success: false, error: 'Not authenticated' };
+
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                        name: data.name,
+                        telegram_username: data.telegramUsername,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', user.id);
+
+                if (error) return { success: false, error: error.message };
+
+                set({ user: { ...user, ...data } });
+                return { success: true };
+            },
+
+            changePassword: async (oldPassword, newPassword) => {
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+                if (error) return { success: false, error: error.message };
+                return { success: true };
+            },
+
+            // Course Actions
+            fetchCourses: async () => {
+                const { data, error } = await supabase
+                    .from('courses')
+                    .select('*, sections:course_sections(*)')
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    const mappedCourses: Course[] = data.map(c => ({
+                        id: c.id,
+                        title: c.title,
+                        description: c.description,
+                        tierRequired: c.tier_required as UserTier,
+                        thumbnailUrl: c.thumbnail_url,
+                        videoCount: c.video_count,
+                        published: c.published,
+                        createdAt: c.created_at,
+                        updatedAt: c.updated_at,
+                        content: c.sections.map((s: any) => ({
+                            id: s.id,
+                            courseId: s.course_id,
+                            title: s.title,
+                            content: s.content,
+                            videoUrl: s.video_url,
+                            orderIndex: s.order_index
+                        })).sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+                    }));
+                    set({ courses: mappedCourses });
+                }
+            },
+
+            getCourse: async (id) => {
+                const { data, error } = await supabase
+                    .from('courses')
+                    .select('*, sections:course_sections(*)')
+                    .eq('id', id)
+                    .single();
+
+                if (data) {
+                    return {
+                        id: data.id,
+                        title: data.title,
+                        description: data.description,
+                        tierRequired: data.tier_required as UserTier,
+                        thumbnailUrl: data.thumbnail_url,
+                        videoCount: data.video_count,
+                        published: data.published,
+                        createdAt: data.created_at,
+                        updatedAt: data.updated_at,
+                        content: data.sections.map((s: any) => ({
+                            id: s.id,
+                            courseId: s.course_id,
+                            title: s.title,
+                            content: s.content,
+                            videoUrl: s.video_url,
+                            orderIndex: s.order_index
+                        })).sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+                    };
+                }
+                return null;
+            },
+
+            addCourse: async (courseData) => {
+                const { data, error } = await supabase
+                    .from('courses')
+                    .insert({
+                        title: courseData.title,
+                        description: courseData.description,
+                        tier_required: courseData.tierRequired,
+                        published: courseData.published
+                    })
+                    .select()
+                    .single();
+
+                if (data) await get().fetchCourses();
+            },
+
+            updateCourse: async (id, data) => {
+                await supabase.from('courses').update({
+                    title: data.title,
+                    description: data.description,
+                    tier_required: data.tierRequired,
+                    published: data.published,
+                    updated_at: new Date().toISOString()
+                }).eq('id', id);
+                await get().fetchCourses();
+            },
+
+            deleteCourse: async (id) => {
+                await supabase.from('courses').delete().eq('id', id);
+                await get().fetchCourses();
+            },
+
+            // Tool Actions
+            fetchTools: async () => {
+                const { data, error } = await supabase
+                    .from('tools')
+                    .select('*, sections:tool_sections(*)')
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    const mappedTools: Tool[] = data.map(t => ({
+                        id: t.id,
+                        title: t.title,
+                        description: t.description,
+                        tierRequired: t.tier_required as UserTier,
+                        thumbnailUrl: t.thumbnail_url,
+                        videoCount: t.video_count,
+                        published: t.published,
+                        createdAt: t.created_at,
+                        updatedAt: t.updated_at,
+                        sections: t.sections.map((s: any) => ({
+                            id: s.id,
+                            toolId: s.tool_id,
+                            title: s.title,
+                            content: s.content,
+                            videoUrl: s.video_url,
+                            orderIndex: s.order_index
+                        })).sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+                    }));
+                    set({ tools: mappedTools });
+                }
+            },
+
+            getTool: async (id) => {
+                const { data, error } = await supabase
+                    .from('tools')
+                    .select('*, sections:tool_sections(*)')
+                    .eq('id', id)
+                    .single();
+
+                if (data) {
+                    return {
+                        id: data.id,
+                        title: data.title,
+                        description: data.description,
+                        tierRequired: data.tier_required as UserTier,
+                        thumbnailUrl: data.thumbnail_url,
+                        videoCount: data.video_count,
+                        published: data.published,
+                        createdAt: data.created_at,
+                        updatedAt: data.updated_at,
+                        sections: data.sections.map((s: any) => ({
+                            id: s.id,
+                            toolId: s.tool_id,
+                            title: s.title,
+                            content: s.content,
+                            videoUrl: s.video_url,
+                            orderIndex: s.order_index
+                        })).sort((a: any, b: any) => a.orderIndex - b.orderIndex)
+                    };
+                }
+                return null;
+            },
+
+            addTool: async (toolData) => {
+                await supabase.from('tools').insert({
+                    title: toolData.title,
+                    description: toolData.description,
+                    tier_required: toolData.tierRequired,
+                    published: toolData.published
+                });
+                await get().fetchTools();
+            },
+
+            updateTool: async (id, data) => {
+                await supabase.from('tools').update({
+                    title: data.title,
+                    description: data.description,
+                    tier_required: data.tierRequired,
+                    published: data.published,
+                    updated_at: new Date().toISOString()
+                }).eq('id', id);
+                await get().fetchTools();
+            },
+
+            deleteTool: async (id) => {
+                await supabase.from('tools').delete().eq('id', id);
+                await get().fetchTools();
+            },
+
+            // Blog Actions
+            fetchBlogs: async () => {
+                const { data, error } = await supabase
+                    .from('blogs')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    const mappedBlogs: Blog[] = data.map(b => ({
+                        id: b.id,
+                        title: b.title,
+                        content: b.content,
+                        preview: b.preview,
+                        tierRequired: b.tier_required as UserTier,
+                        author: b.author,
+                        readTime: b.read_time,
+                        published: b.published,
+                        createdAt: b.created_at
+                    }));
+                    set({ blogs: mappedBlogs });
+                }
+            },
+
+            getBlog: async (id) => {
+                const { data, error } = await supabase
+                    .from('blogs')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (data) {
+                    return {
+                        id: data.id,
+                        title: data.title,
+                        content: data.content,
+                        preview: data.preview,
+                        tierRequired: data.tier_required as UserTier,
+                        author: data.author,
+                        readTime: data.read_time,
+                        published: data.published,
+                        createdAt: data.created_at
+                    };
+                }
+                return null;
+            },
+
+            addBlog: async (blogData) => {
+                await supabase.from('blogs').insert({
+                    title: blogData.title,
+                    content: blogData.content,
+                    preview: blogData.preview,
+                    tier_required: blogData.tierRequired,
+                    author: blogData.author,
+                    read_time: blogData.readTime,
+                    published: blogData.published
+                });
+                await get().fetchBlogs();
+            },
+
+            updateBlog: async (id, data) => {
+                await supabase.from('blogs').update({
+                    title: data.title,
+                    content: data.content,
+                    preview: data.preview,
+                    tier_required: data.tierRequired,
+                    published: data.published
+                }).eq('id', id);
+                await get().fetchBlogs();
+            },
+
+            deleteBlog: async (id) => {
+                await supabase.from('blogs').delete().eq('id', id);
+                await get().fetchBlogs();
+            },
+
+            // Payment Actions
+            fetchPayments: async () => {
+                const { data, error } = await supabase
+                    .from('payments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    const mappedPayments: Payment[] = data.map(p => ({
+                        id: p.id,
+                        userId: p.user_id,
+                        userName: '', // Would normally join with profiles
+                        userEmail: '',
+                        tierRequested: p.tier_requested as UserTier,
+                        transactionId: p.transaction_id,
+                        screenshotUrl: p.screenshot_url,
+                        notes: p.notes,
+                        status: p.status as PaymentStatus,
+                        rejectionReason: p.rejection_reason,
+                        reviewedAt: p.reviewed_at,
+                        reviewedBy: p.reviewed_by,
+                        createdAt: p.created_at
+                    }));
+                    set({ payments: mappedPayments });
+                }
+            },
+
+            submitPayment: async (tierRequested, transactionId, notes) => {
+                const { user } = get();
+                if (!user) return { success: false, error: 'Not authenticated' };
+
+                const { error } = await supabase.from('payments').insert({
+                    user_id: user.id,
+                    tier_requested: tierRequested,
+                    transaction_id: transactionId,
+                    notes,
+                    status: 'pending'
+                });
+
+                if (error) return { success: false, error: error.message };
+                await get().fetchPayments();
+                return { success: true };
+            },
+
+            reviewPayment: async (paymentId, status, rejectionReason) => {
+                const { user } = get();
+                await supabase.from('payments').update({
+                    status,
+                    rejection_reason: rejectionReason,
+                    reviewed_at: new Date().toISOString(),
+                    reviewed_by: user?.id
+                }).eq('id', paymentId);
+                await get().fetchPayments();
+
+                // If approved, update user tier
+                if (status === 'approved') {
+                    const payment = get().payments.find(p => p.id === paymentId);
+                    if (payment) {
+                        await get().updateUserTier(payment.userId, payment.tierRequested);
+                    }
+                }
+            },
+
+            // Admin User Actions
+            fetchAllUsers: async () => {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    const mappedUsers: User[] = data.map(u => ({
+                        id: u.id,
+                        email: u.email,
+                        name: u.name,
+                        tier: u.tier as UserTier,
+                        role: u.role,
+                        telegramUsername: u.telegram_username,
+                        telegramAccess: u.telegram_access,
+                        banned: u.banned,
+                        createdAt: u.created_at,
+                        updatedAt: u.updated_at
+                    }));
+                    set({ allUsers: mappedUsers });
+                }
+            },
+
+            updateUserTier: async (userId, tier) => {
+                await supabase.from('profiles').update({ tier }).eq('id', userId);
+                await get().fetchAllUsers();
+            },
+
+            banUser: async (userId) => {
+                await supabase.from('profiles').update({ banned: true }).eq('id', userId);
+                await get().fetchAllUsers();
+            },
+
+            unbanUser: async (userId) => {
+                await supabase.from('profiles').update({ banned: false }).eq('id', userId);
+                await get().fetchAllUsers();
+            },
+
+            setTelegramAccess: async (userId, access) => {
+                await supabase.from('profiles').update({ telegram_access: access }).eq('id', userId);
+                await get().fetchAllUsers();
+            },
+
+            // Notification Actions
+            fetchNotifications: async () => {
+                const { user } = get();
+                if (!user) return;
+                const { data, error } = await supabase
+                    .from('notifications')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+
+                if (data) {
+                    set({
+                        notifications: data.map(n => ({
+                            id: n.id,
+                            userId: n.user_id,
+                            title: n.title,
+                            message: n.message,
+                            type: n.type as any,
+                            read: n.read,
+                            createdAt: n.created_at
+                        }))
+                    });
+                }
+            },
+
+            markNotificationRead: async (id) => {
+                await supabase.from('notifications').update({ read: true }).eq('id', id);
+                await get().fetchNotifications();
+            },
+
+            // Admin Stats Actions
+            fetchAdminStats: async () => {
+                const { data: users } = await supabase.from('profiles').select('tier, created_at');
+                if (users) {
+                    const stats = {
+                        totalUsers: users.length,
+                        freeUsers: users.filter(u => u.tier === 'free').length,
+                        tier1Users: users.filter(u => u.tier === 'tier1').length,
+                        tier2Users: users.filter(u => u.tier === 'tier2').length,
+                        conversionRate: users.length > 0 ? Math.round((users.filter(u => u.tier !== 'free').length / users.length) * 100) : 0,
+                        userGrowth: [] // Logic for growth would go here
+                    };
+                    set({ adminStats: stats as any });
+                }
+            }
+        }),
+        {
+            name: 'tholvitrader-storage',
+            partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+        }
+    )
+);
