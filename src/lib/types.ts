@@ -50,20 +50,24 @@ export interface Course {
 
 export interface CourseSection {
   id: string;
-  courseId: string;
+  courseId?: string;
   title: string;
   content: string;
+  type?: string;
   videoUrl?: string;
   orderIndex: number;
+  order?: number;
 }
 
 export interface ToolSection {
   id: string;
-  toolId: string;
+  toolId?: string;
   title: string;
   content: string;
+  type?: string;
   videoUrl?: string;
   orderIndex: number;
+  order?: number;
 }
 
 export interface Tool {
