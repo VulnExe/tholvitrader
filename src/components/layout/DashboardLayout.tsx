@@ -12,38 +12,47 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-    const { user, isAuthenticated, checkAuth, fetchNotifications } = useStore();
+    const { user, isAuthenticated, initAuth, fetchNotifications } = useStore();
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
+        console.log('[Layout] DashboardLayout mounted.');
         setMounted(true);
     }, []);
 
     useEffect(() => {
-        const init = async () => {
-            await checkAuth();
-        };
         if (mounted) {
-            init();
+            console.log('[Layout] Initializing auth listener...');
+            const unsubscribe = initAuth();
+            return () => {
+                console.log('[Layout] Unsubscribing from auth listener.');
+                unsubscribe();
+            };
         }
-    }, [mounted, checkAuth]);
+    }, [mounted, initAuth]);
 
     useEffect(() => {
-        if (mounted && !isAuthenticated && !pathname?.startsWith('/auth')) {
-            // router.push('/auth/login');
+        if (mounted) {
+            console.log('[Layout] Auth state update:', { isAuthenticated, hasUser: !!user });
+            if (isAuthenticated) {
+                console.log('[Layout] User authenticated, fetching necessary data...');
+                fetchNotifications();
+                useStore.getState().fetchCourses();
+                useStore.getState().fetchBlogs();
+            }
         }
-        if (mounted && isAuthenticated) {
-            fetchNotifications();
-        }
-    }, [mounted, isAuthenticated, pathname, fetchNotifications, router]);
+    }, [mounted, isAuthenticated, fetchNotifications, user]);
 
     const isAdminRoute = pathname?.startsWith('/admin');
     const isAdmin = user?.role === 'admin';
 
-    if (!mounted || !isAuthenticated) {
+    console.log('[Layout] Rendering state:', { mounted, isAuthenticated, hasUser: !!user, isAdminRoute, isAdmin });
+
+    if (!mounted || !isAuthenticated || (isAuthenticated && !user)) {
+        console.log('[Layout] Rendering Loader (checking auth/profile)...');
         return (
             <div className="min-h-screen bg-[#050507] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
@@ -52,6 +61,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
 
     if (isAdminRoute && !isAdmin) {
+        console.log('[Layout] Access denied: User is not an admin.');
         return (
             <div className="min-h-screen bg-[#050507] flex items-center justify-center p-6 text-center">
                 <div>
