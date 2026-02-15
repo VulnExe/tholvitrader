@@ -19,26 +19,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     useEffect(() => {
-        console.log('[Layout] DashboardLayout mounted.');
         setMounted(true);
     }, []);
 
     useEffect(() => {
         if (mounted) {
-            console.log('[Layout] Initializing auth listener...');
             const unsubscribe = initAuth();
-            return () => {
-                console.log('[Layout] Unsubscribing from auth listener.');
-                unsubscribe();
-            };
+            return () => unsubscribe();
         }
     }, [mounted, initAuth]);
 
     useEffect(() => {
         if (mounted) {
-            console.log('[Layout] Auth state update:', { isAuthenticated, hasUser: !!user });
             if (isAuthenticated) {
-                console.log('[Layout] User authenticated, fetching necessary data...');
                 fetchNotifications();
                 useStore.getState().fetchCourses();
                 useStore.getState().fetchBlogs();
@@ -49,10 +42,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const isAdminRoute = pathname?.startsWith('/admin');
     const isAdmin = user?.role === 'admin';
 
-    console.log('[Layout] Rendering state:', { mounted, isAuthenticated, hasUser: !!user, isAdminRoute, isAdmin });
-
     if (!mounted || !isAuthenticated || (isAuthenticated && !user)) {
-        console.log('[Layout] Rendering Loader (checking auth/profile)...');
         return (
             <div className="min-h-screen bg-[#050507] flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
@@ -61,7 +51,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
 
     if (isAdminRoute && !isAdmin) {
-        console.log('[Layout] Access denied: User is not an admin.');
         return (
             <div className="min-h-screen bg-[#050507] flex items-center justify-center p-6 text-center">
                 <div>

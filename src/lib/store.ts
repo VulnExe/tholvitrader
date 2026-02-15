@@ -130,46 +130,34 @@ export const useStore = create<AppStore>()(
             // Auth Actions
             initAuth: () => {
                 const { checkAuth } = get();
-                console.log('[Auth] Initializing auth listener...');
 
                 // Initial check
                 checkAuth();
 
                 // Listen for changes
                 const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                    console.log('[Auth] Auth event triggered:', event, 'Session:', !!session);
                     if (session) {
                         await checkAuth();
                     } else if (event === 'SIGNED_OUT') {
-                        console.log('[Auth] User signed out, clearing state.');
                         set({ user: null, isAuthenticated: false });
                     }
                 });
 
-                return () => {
-                    console.log('[Auth] Cleaning up auth listener.');
-                    subscription.unsubscribe();
-                };
+                return () => subscription.unsubscribe();
             },
 
             checkAuth: async () => {
-                console.log('[Auth] Checking session...');
                 const { data: { session } } = await supabase.auth.getSession();
-                console.log('[Auth] Session found:', !!session);
 
                 if (session?.user) {
-                    console.log('[Auth] User ID:', session.user.id);
                     let { data: profile } = await supabase
                         .from('profiles')
                         .select('*')
                         .eq('id', session.user.id)
                         .single();
 
-                    console.log('[Auth] Profile record:', !!profile);
-
                     // Failsafe: If profile doesn't exist (common for new OAuth users), create it
                     if (!profile) {
-                        console.log('[Auth] Profile missing, executing failsafe insert...');
                         const { data: newProfile, error: insertError } = await supabase
                             .from('profiles')
                             .insert({
@@ -181,12 +169,9 @@ export const useStore = create<AppStore>()(
                             .single();
 
                         if (newProfile) {
-                            console.log('[Auth] Failsafe profile created successfully.');
                             profile = newProfile;
                         } else {
-                            console.error('[Auth] Failsafe profile creation failed:', insertError);
                             // If still no profile, at least set basic user info so UI doesn't break
-                            console.log('[Auth] Setting temporary user state to prevent blank page.');
                             set({
                                 user: {
                                     id: session.user.id,
@@ -202,13 +187,11 @@ export const useStore = create<AppStore>()(
                                 },
                                 isAuthenticated: true
                             });
-                            console.log('[Auth] Temporary auth state set.');
                             return;
                         }
                     }
 
                     if (profile) {
-                        console.log('[Auth] Setting final user state for:', profile.email);
                         set({
                             user: {
                                 id: profile.id,
@@ -224,10 +207,8 @@ export const useStore = create<AppStore>()(
                             },
                             isAuthenticated: true
                         });
-                        console.log('[Auth] Auth check complete. State updated.');
                     }
                 } else {
-                    console.log('[Auth] No active session found.');
                     set({ user: null, isAuthenticated: false });
                 }
             },
@@ -278,7 +259,6 @@ export const useStore = create<AppStore>()(
             },
 
             signInWithGoogle: async () => {
-                console.log('[Auth] Initiating Google Sign-In...');
                 set({ isLoading: true });
                 const { error } = await supabase.auth.signInWithOAuth({
                     provider: 'google',
@@ -288,12 +268,10 @@ export const useStore = create<AppStore>()(
                 });
 
                 if (error) {
-                    console.error('[Auth] Google Sign-In Error:', error.message);
                     set({ isLoading: false });
                     return { success: false, error: error.message };
                 }
 
-                console.log('[Auth] Google OAuth redirect initiated.');
                 // Return success immediately as OAuth triggers a redirect
                 return { success: true };
             },
