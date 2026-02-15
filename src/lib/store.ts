@@ -16,6 +16,7 @@ interface AppStore {
     updateProfile: (data: Partial<User>) => Promise<{ success: boolean; error?: string }>;
     changePassword: (oldPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
     checkAuth: () => Promise<void>;
+    signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
 
     // Courses
     courses: Course[];
@@ -198,6 +199,24 @@ export const useStore = create<AppStore>()(
 
                 set({ isLoading: false });
                 return { success: false, error: 'Profile not found.' };
+            },
+
+            signInWithGoogle: async () => {
+                set({ isLoading: true });
+                const { error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: `${window.location.origin}/dashboard`
+                    }
+                });
+
+                if (error) {
+                    set({ isLoading: false });
+                    return { success: false, error: error.message };
+                }
+
+                // Return success immediately as OAuth triggers a redirect
+                return { success: true };
             },
 
             signup: async (email, password, name) => {
