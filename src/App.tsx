@@ -24,6 +24,9 @@ import MyAccessPage from '@/pages/MyAccessPage';
 import UpgradePage from '@/pages/UpgradePage';
 import CheckoutPage from '@/pages/CheckoutPage';
 
+// Public pages
+import LandingPage from '@/pages/LandingPage';
+
 // Admin pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
 import AdminUsersPage from '@/pages/admin/AdminUsersPage';
@@ -177,7 +180,7 @@ export default function App() {
           <Route path="/" element={
             isAuthenticated
               ? <Navigate to={user?.role === 'admin' ? '/admin' : '/dashboard'} replace />
-              : <Navigate to="/auth/login" replace />
+              : <LandingPage />
           } />
           <Route path="*" element={
             isAuthenticated
