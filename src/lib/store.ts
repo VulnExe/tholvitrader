@@ -130,6 +130,21 @@ export const useStore = create<AppStore>()(
         initAuth: () => {
             // Do the initial session check ONCE
             const initialCheck = async () => {
+                // Check if we are in an OAuth callback flow (hash or query params)
+                const isAuthCallback = window.location.hash && (
+                    window.location.hash.includes('access_token') ||
+                    window.location.hash.includes('error') ||
+                    window.location.hash.includes('type=recovery') ||
+                    window.location.hash.includes('type=invite')
+                );
+
+                if (isAuthCallback) {
+                    console.log('Auth callback detected, waiting for onAuthStateChange...');
+                    // return early and let onAuthStateChange handle the session set up
+                    // We set isInitialized to false to keep loading screen
+                    return;
+                }
+
                 try {
                     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
@@ -138,31 +153,38 @@ export const useStore = create<AppStore>()(
                     if (session?.user) {
                         await get()._loadProfile(session.user);
                     } else {
-                        set({ user: null, isAuthenticated: false });
+                        set({ isInitialized: true, isAuthenticated: false });
                     }
                 } catch (error) {
-                    console.error('Auth initialization error:', error);
-                    set({ user: null, isAuthenticated: false });
-                } finally {
-                    set({ isInitialized: true });
+                    console.error('Initial session check failed:', error);
+                    set({ isInitialized: true, isAuthenticated: false });
                 }
             };
 
             initialCheck();
 
-            // Listen for SUBSEQUENT auth changes only (not the initial event)
+            // Listen for changes
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                // Skip the initial session event — we already handled it above
-                if (event === 'INITIAL_SESSION') return;
+                console.log('Auth state change:', event, session?.user?.email);
 
-                if (event === 'SIGNED_IN' && session?.user) {
-                    await get()._loadProfile(session.user);
-                    set({ isInitialized: true });
-                } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-                    // Token refresh doesn't need full profile reload
-                    return;
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
+                    if (session?.user) {
+                        // If we already have user data, avoid reloading if same user?
+                        // But ensuring profile is loaded is safer.
+                        await get()._loadProfile(session.user);
+                        // Ensure initialization is marked complete
+                        set({ isInitialized: true });
+                    }
                 } else if (event === 'SIGNED_OUT') {
-                    set({ user: null, isAuthenticated: false, isInitialized: true });
+                    set({
+                        user: null,
+                        isAuthenticated: false,
+                        isInitialized: true,
+                        courses: [], // Clear protected data
+                        tools: [],
+                        blogs: [], // Public blogs might stay but safer to clear/refetch
+                        payments: []
+                    });
                 }
             });
 
@@ -218,7 +240,8 @@ export const useStore = create<AppStore>()(
                             createdAt: profile.created_at,
                             updatedAt: profile.updated_at
                         },
-                        isAuthenticated: true
+                        isAuthenticated: true,
+                        isInitialized: true
                     });
                 } else {
                     console.warn('Falling back to default user state (tier: free)');
@@ -236,7 +259,8 @@ export const useStore = create<AppStore>()(
                             createdAt: new Date().toISOString(),
                             updatedAt: new Date().toISOString()
                         },
-                        isAuthenticated: true
+                        isAuthenticated: true,
+                        isInitialized: true
                     });
                 }
             } catch (error) {
@@ -255,7 +279,8 @@ export const useStore = create<AppStore>()(
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
                     },
-                    isAuthenticated: true
+                    isAuthenticated: true,
+                    isInitialized: true
                 });
             }
         },

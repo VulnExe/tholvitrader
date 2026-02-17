@@ -84,7 +84,7 @@ function AuthInitializer({ children }: { children: React.ReactNode }) {
           console.warn('Auth initialization timed out, forcing completion');
           useStore.setState({ isInitialized: true, isAuthenticated: false, user: null });
         }
-      }, 5000);
+      }, 15000);
       return () => clearTimeout(timer);
     }
   }, [isInitialized]);
