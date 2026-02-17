@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import TierBadge from '@/components/ui/TierBadge';
-import { canAccessContent } from '@/lib/tierSystem';
+import { canAccessContent, getTierLabel } from '@/lib/tierSystem';
 import { Wrench, Lock, Search, Filter, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -52,7 +52,7 @@ export default function ToolsPage() {
                                 onClick={() => setTierFilter(t)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${tierFilter === t ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10'}`}
                             >
-                                {t === 'all' ? 'All' : t.toUpperCase()}
+                                {t === 'all' ? 'All' : getTierLabel(t as any)}
                             </button>
                         ))}
                     </div>

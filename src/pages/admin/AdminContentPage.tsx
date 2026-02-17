@@ -5,6 +5,7 @@ import TierBadge from '@/components/ui/TierBadge';
 import Modal from '@/components/ui/Modal';
 import FileUpload from '@/components/ui/FileUpload';
 import { UserTier } from '@/lib/types';
+import { getTierLabel } from '@/lib/tierSystem';
 import { BookOpen, Wrench, FileText, Plus, Edit, Trash2, Search, Loader2, Save, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -239,9 +240,9 @@ export default function AdminContentPage() {
                         <div>
                             <label className="block text-sm font-medium text-white/50 mb-2">Tier</label>
                             <select value={tierRequired} onChange={(e) => setTierRequired(e.target.value as UserTier)} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-purple-500/50 transition-all">
-                                <option value="free">Free</option>
-                                <option value="tier1">Tier 1</option>
-                                <option value="tier2">Tier 2</option>
+                                {['free', 'tier1', 'tier2'].map((t) => (
+                                    <option key={t} value={t}>{getTierLabel(t as UserTier)}</option>
+                                ))}
                             </select>
                         </div>
                         <div>

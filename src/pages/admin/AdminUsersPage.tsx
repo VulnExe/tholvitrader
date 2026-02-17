@@ -8,6 +8,7 @@ import { Users, Search, Edit, Save, Loader2, Mail, Calendar, Shield } from 'luci
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { UserTier } from '@/lib/types';
+import { getTierLabel } from '@/lib/tierSystem';
 import { format } from 'date-fns';
 
 export default function AdminUsersPage() {
@@ -191,7 +192,7 @@ export default function AdminUsersPage() {
                                         onClick={() => setEditTier(tier)}
                                         className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${editTier === tier ? 'bg-purple-500/10 border-purple-500 text-white' : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'}`}
                                     >
-                                        <span className="capitalize font-bold text-sm">{tier}</span>
+                                        <span className="font-bold text-sm">{getTierLabel(tier)}</span>
                                         {editTier === tier && <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />}
                                     </button>
                                 ))}

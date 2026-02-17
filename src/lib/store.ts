@@ -171,25 +171,37 @@ export const useStore = create<AppStore>()(
 
         // Internal helper to load a user profile from a Supabase auth user
         _loadProfile: async (authUser: any) => {
-            try {
-                // Fetch profile with a timeout fallback
+            const fetchProfile = async () => {
                 const profilePromise = supabase
                     .from('profiles')
                     .select('*')
                     .eq('id', authUser.id)
                     .single();
 
-                // Timeout after 3 seconds
+                // Timeout after 5 seconds (increased from 3s)
                 const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => reject(new Error('Profile fetch timeout')), 3000)
+                    setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
                 );
 
+                const result = await Promise.race([profilePromise, timeoutPromise]) as any;
+                if (result.error) throw result.error;
+                return result.data;
+            };
+
+            try {
                 let profile = null;
                 try {
-                    const { data } = await Promise.race([profilePromise, timeoutPromise]) as any;
-                    profile = data;
+                    profile = await fetchProfile();
                 } catch (e) {
-                    console.warn('Profile fetch failed or timed out:', e);
+                    console.warn('Initial profile fetch failed:', e);
+                    // Retry once after 500ms
+                    await new Promise(r => setTimeout(r, 500));
+                    try {
+                        console.log('Retrying profile fetch...');
+                        profile = await fetchProfile();
+                    } catch (retryError) {
+                        console.error('Retry profile fetch failed:', retryError);
+                    }
                 }
 
                 if (profile) {
@@ -209,6 +221,7 @@ export const useStore = create<AppStore>()(
                         isAuthenticated: true
                     });
                 } else {
+                    console.warn('Falling back to default user state (tier: free)');
                     // Fallback user state from auth metadata
                     set({
                         user: {
@@ -227,7 +240,7 @@ export const useStore = create<AppStore>()(
                     });
                 }
             } catch (error) {
-                console.error('Profile load error:', error);
+                console.error('Critical profile load error:', error);
                 // Still mark as authenticated but with fallback data
                 set({
                     user: {

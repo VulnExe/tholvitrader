@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import TierBadge from '@/components/ui/TierBadge';
-import { canAccessContent } from '@/lib/tierSystem';
+import { canAccessContent, getTierLabel } from '@/lib/tierSystem';
 import { Blog } from '@/lib/types';
 import { ArrowLeft, FileText, Lock, Clock, User } from 'lucide-react';
 
@@ -71,7 +71,7 @@ export default function BlogDetailPage() {
                                 <Lock className="w-10 h-10 text-white/10 mx-auto mb-4" />
                                 <h3 className="text-lg font-bold text-white mb-2">Content Locked</h3>
                                 <p className="text-white/40 text-sm mb-2">{blog.preview}</p>
-                                <p className="text-white/30 text-xs mb-6">Upgrade to {blog.tierRequired.toUpperCase()} to read the full article</p>
+                                <p className="text-white/30 text-xs mb-6">Upgrade to {getTierLabel(blog.tierRequired)} to read the full article</p>
                                 <button
                                     onClick={() => navigate('/upgrade')}
                                     className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-bold hover:shadow-lg transition-all"

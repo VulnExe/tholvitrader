@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import TierBadge from '@/components/ui/TierBadge';
-import { canAccessContent } from '@/lib/tierSystem';
+import { canAccessContent, getTierLabel } from '@/lib/tierSystem';
 import { Course, CourseSection } from '@/lib/types';
 import { ArrowLeft, BookOpen, Lock, Play, ChevronRight } from 'lucide-react';
 
@@ -60,7 +60,7 @@ export default function CourseDetailPage() {
                             <div className="p-12 bg-white/5 border border-white/10 rounded-2xl text-center">
                                 <Lock className="w-10 h-10 text-white/10 mx-auto mb-4" />
                                 <h3 className="text-lg font-bold text-white mb-2">Content Locked</h3>
-                                <p className="text-white/40 text-sm mb-6">Upgrade to {course.tierRequired.toUpperCase()} to access this course</p>
+                                <p className="text-white/40 text-sm mb-6">Upgrade to {getTierLabel(course.tierRequired)} to access this course</p>
                                 <button
                                     onClick={() => navigate('/upgrade')}
                                     className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-bold hover:shadow-lg transition-all"
