@@ -13,7 +13,7 @@ interface PaymentDetailsModalProps {
     payment: Payment | null;
     isOpen: boolean;
     onClose: () => void;
-    isAdmin?: boolean; // To show extra admin info if needed
+    isAdmin?: boolean;
 }
 
 export default function PaymentDetailsModal({ payment, isOpen, onClose, isAdmin = false }: PaymentDetailsModalProps) {

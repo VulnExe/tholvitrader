@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2, File, CheckCircle2 } from 'lucide-react';
 import { useStore } from '@/lib/store';

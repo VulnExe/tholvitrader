@@ -1,11 +1,9 @@
-'use client';
-
 import { useStore } from '@/lib/store';
 import { Bell, Search, X, BookOpen, Wrench, Newspaper, ArrowRight, Menu } from 'lucide-react';
 import TierBadge from '../ui/TierBadge';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 
 interface TopbarProps {
     setMobileOpen?: (open: boolean) => void;
@@ -104,14 +102,13 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
                             >
                                 {hasResults ? (
                                     <div className="space-y-4 p-2">
-                                        {/* Result Sections... */}
                                         {filteredCourses.length > 0 && (
                                             <div>
                                                 <p className="text-[10px] uppercase tracking-widest text-white/20 font-bold mb-2 ml-2">Courses</p>
                                                 {filteredCourses.map(c => (
                                                     <Link
                                                         key={c.id}
-                                                        href={`/courses/${c.id}`}
+                                                        to={`/courses/${c.id}`}
                                                         onClick={() => { setShowSearch(false); setSearchQuery(''); }}
                                                         className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
                                                     >
@@ -133,7 +130,7 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
                                                 {filteredTools.map(t => (
                                                     <Link
                                                         key={t.id}
-                                                        href={`/tools/${t.id}`}
+                                                        to={`/tools/${t.id}`}
                                                         onClick={() => { setShowSearch(false); setSearchQuery(''); }}
                                                         className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
                                                     >
@@ -155,7 +152,7 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
                                                 {filteredBlogs.map(b => (
                                                     <Link
                                                         key={b.id}
-                                                        href={`/blog/${b.id}`}
+                                                        to={`/blog/${b.id}`}
                                                         onClick={() => { setShowSearch(false); setSearchQuery(''); }}
                                                         className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
                                                     >
@@ -212,8 +209,6 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
                         <button onClick={() => { setMobileSearchOpen(false); setSearchQuery(''); }} className="p-2">
                             <X className="w-5 h-5 text-white/40" />
                         </button>
-
-                        {/* mobile search results dropdown logic can be added here if needed */}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -285,12 +280,12 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
 
                 {/* Avatar */}
                 {user && (
-                    <div
-                        onClick={() => window.location.href = '/settings'}
+                    <Link
+                        to="/settings"
                         className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500/30 to-blue-500/30 border border-white/10 flex items-center justify-center text-white font-black text-xs cursor-pointer hover:border-purple-500/50 transition-all hover:scale-105"
                     >
                         {user.name.charAt(0).toUpperCase()}
-                    </div>
+                    </Link>
                 )}
             </div>
         </header>

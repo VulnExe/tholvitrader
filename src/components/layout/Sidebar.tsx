@@ -1,7 +1,4 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '@/lib/store';
 import {
     LayoutDashboard,
@@ -29,7 +26,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
-    const pathname = usePathname();
+    const location = useLocation();
+    const pathname = location.pathname;
     const { user, logout } = useStore();
     const [collapsed, setCollapsed] = useState(false);
     const isAdmin = user?.role === 'admin';
@@ -75,7 +73,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                 {/* Logo Area */}
                 <div className="px-5 h-24 flex items-center justify-between border-b border-white/5">
                     {!collapsed && (
-                        <Link href="/dashboard" className="flex items-center gap-2.5">
+                        <Link to="/dashboard" className="flex items-center gap-2.5">
                             <img src="/Tholvitrader.png" alt="TholviTrader" className="h-14 w-auto object-contain" />
                         </Link>
                     )}
@@ -123,7 +121,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                     {/* Switch between admin/user */}
                     {isAdmin && (
                         <Link
-                            href={isAdminRoute ? '/dashboard' : '/admin'}
+                            to={isAdminRoute ? '/dashboard' : '/admin'}
                             className={`
                                 flex items-center gap-3 px-3 py-2.5 rounded-lg mb-3 text-xs font-medium
                                 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors
@@ -141,7 +139,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
                         return (
                             <Link
                                 key={item.href}
-                                href={item.href}
+                                to={item.href}
                                 onClick={() => setMobileOpen?.(false)}
                                 className={`
                                     flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium

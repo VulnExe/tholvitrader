@@ -1,5 +1,3 @@
-'use client';
-
 import { UserTier } from '@/lib/types';
 import { getTierLabel, getTierGradient } from '@/lib/tierSystem';
 
