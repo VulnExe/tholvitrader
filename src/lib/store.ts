@@ -128,9 +128,10 @@ export const useStore = create<AppStore>()(
 
         // Auth Actions
         initAuth: () => {
-            // Do the initial session check ONCE
-            const initialCheck = async () => {
-                // Check if we are in an OAuth callback flow (hash or query params)
+            // Listen for changes
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state change:', event, session?.user?.email);
+
                 const isAuthCallback = window.location.hash && (
                     window.location.hash.includes('access_token') ||
                     window.location.hash.includes('error') ||
@@ -138,42 +139,28 @@ export const useStore = create<AppStore>()(
                     window.location.hash.includes('type=invite')
                 );
 
-                if (isAuthCallback) {
-                    console.log('Auth callback detected, waiting for onAuthStateChange...');
-                    // return early and let onAuthStateChange handle the session set up
-                    // We set isInitialized to false to keep loading screen
-                    return;
-                }
-
-                try {
-                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-                    if (sessionError) throw sessionError;
-
-                    if (session?.user) {
-                        await get()._loadProfile(session.user);
-                    } else {
-                        set({ isInitialized: true, isAuthenticated: false });
-                    }
-                } catch (error) {
-                    console.error('Initial session check failed:', error);
-                    set({ isInitialized: true, isAuthenticated: false });
-                }
-            };
-
-            initialCheck();
-
-            // Listen for changes
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                console.log('Auth state change:', event, session?.user?.email);
-
                 if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
                     if (session?.user) {
-                        // If we already have user data, avoid reloading if same user?
-                        // But ensuring profile is loaded is safer.
+                        // If we have a user, load their profile
+                        // Deduplicate logic handled by store state check if needed, but _loadProfile is safe enough
                         await get()._loadProfile(session.user);
-                        // Ensure initialization is marked complete
                         set({ isInitialized: true });
+                    } else if (event === 'INITIAL_SESSION' && !session) {
+                        // Handle case where we started but have no session (not logged in)
+                        // ONLY mark as initialized if we are NOT waiting for an OAuth callback
+                        if (!isAuthCallback) {
+                            set({
+                                user: null,
+                                isAuthenticated: false,
+                                isInitialized: true,
+                                courses: [],
+                                tools: [],
+                                blogs: [],
+                                payments: []
+                            });
+                        } else {
+                            console.log('INITIAL_SESSION null but Auth Callback detected, waiting...');
+                        }
                     }
                 } else if (event === 'SIGNED_OUT') {
                     set({
