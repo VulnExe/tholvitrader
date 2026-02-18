@@ -22,7 +22,13 @@ export default function CheckoutPage() {
     const [copiedId, setCopiedId] = useState(false);
     const [qrZoomed, setQrZoomed] = useState(false);
 
-    const tierData = TIER_DATA[tier as keyof typeof TIER_DATA];
+    const initialTierData = TIER_DATA[tier as keyof typeof TIER_DATA];
+    const tierData = initialTierData ? {
+        ...initialTierData,
+        price: initialTierData.id === 'tier1' ? (siteSettings.tier1Price || initialTierData.price)
+            : initialTierData.id === 'tier2' ? (siteSettings.tier2Price || initialTierData.price)
+                : initialTierData.price
+    } : null;
 
     useEffect(() => {
         if (isInitialized && isAuthenticated) {

@@ -62,7 +62,7 @@ export const TIER_DATA = {
         id: 'tier1' as UserTier,
         name: 'Tier 1 — Pro',
         price: '30',
-        highlighted: true,
+        highlighted: false,
         features: [
             'Everything in Free',
             'Crack Tools Access',
@@ -74,7 +74,7 @@ export const TIER_DATA = {
         id: 'tier2' as UserTier,
         name: 'Tier 2 — Elite',
         price: '55',
-        highlighted: false,
+        highlighted: true,
         features: [
             'Everything in Tier 1',
             'Full bundles of premium courses',

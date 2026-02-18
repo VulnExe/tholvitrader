@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import FileUpload from '@/components/ui/FileUpload';
-import { Settings, Save, Loader2, Link as LinkIcon, QrCode, MessageCircle } from 'lucide-react';
+import { Settings, Save, Loader2, Link as LinkIcon, QrCode, MessageCircle, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,8 @@ export default function AdminSettingsPage() {
     const [binanceQrUrl, setBinanceQrUrl] = useState('');
     const [telegramBotLink, setTelegramBotLink] = useState('');
     const [telegramChannelLink, setTelegramChannelLink] = useState('');
+    const [tier1Price, setTier1Price] = useState('30');
+    const [tier2Price, setTier2Price] = useState('55');
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -26,12 +28,21 @@ export default function AdminSettingsPage() {
             setBinanceQrUrl(siteSettings.binanceQrUrl || '');
             setTelegramBotLink(siteSettings.telegramBotLink || '');
             setTelegramChannelLink(siteSettings.telegramChannelLink || '');
+            setTier1Price(siteSettings.tier1Price || '30');
+            setTier2Price(siteSettings.tier2Price || '55');
         }
     }, [siteSettings]);
 
     const handleSave = async () => {
         setSaving(true);
-        const result = await updateSiteSettings({ binanceId, binanceQrUrl, telegramBotLink, telegramChannelLink });
+        const result = await updateSiteSettings({
+            binanceId,
+            binanceQrUrl,
+            telegramBotLink,
+            telegramChannelLink,
+            tier1Price,
+            tier2Price
+        });
         if (result.success) {
             toast.success('Settings saved');
         } else {
@@ -82,6 +93,40 @@ export default function AdminSettingsPage() {
                         accept="image/*"
                         bucket="site-assets"
                     />
+                </motion.div>
+
+                {/* Pricing Settings */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="p-6 bg-white/5 border border-white/10 rounded-2xl space-y-5"
+                >
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <DollarSign className="w-5 h-5 text-green-400" />
+                        Pricing Configuration
+                    </h2>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-white/50 mb-2">Tier 1 Price ($)</label>
+                            <input
+                                type="number"
+                                value={tier1Price}
+                                onChange={(e) => setTier1Price(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 transition-all font-mono"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-white/50 mb-2">Tier 2 Price ($)</label>
+                            <input
+                                type="number"
+                                value={tier2Price}
+                                onChange={(e) => setTier2Price(e.target.value)}
+                                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 transition-all font-mono"
+                            />
+                        </div>
+                    </div>
                 </motion.div>
 
                 {/* Telegram Settings */}

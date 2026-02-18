@@ -43,6 +43,7 @@ export interface Course {
     thumbnailUrl?: string;
     videoCount: number;
     published: boolean;
+    isFeatured: boolean;
     createdAt: string;
     updatedAt: string;
     content: CourseSection[];
@@ -78,6 +79,7 @@ export interface Tool {
     thumbnailUrl?: string;
     videoCount: number;
     published: boolean;
+    isFeatured: boolean;
     createdAt: string;
     updatedAt: string;
     sections: ToolSection[];

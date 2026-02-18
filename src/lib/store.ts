@@ -75,6 +75,8 @@ interface AppStore {
         binanceId: string;
         telegramBotLink: string;
         telegramChannelLink: string;
+        tier1Price: string;
+        tier2Price: string;
     };
     fetchSiteSettings: () => Promise<void>;
     updateSiteSettings: (data: any) => Promise<{ success: boolean; error?: string }>;
@@ -86,6 +88,11 @@ interface AppStore {
 
     // Storage
     uploadFile: (bucket: string, path: string, file: File) => Promise<{ publicUrl: string | null; error?: string }>;
+
+    // Public Catalog (no auth required)
+    publicCourses: Course[];
+    publicTools: Tool[];
+    fetchPublicCatalog: () => Promise<void>;
 }
 
 export const useStore = create<AppStore>()(
@@ -115,6 +122,8 @@ export const useStore = create<AppStore>()(
             conversionRate: 0,
             userGrowth: []
         },
+        publicCourses: [],
+        publicTools: [],
         searchQuery: '',
         setSearchQuery: (query) => set({ searchQuery: query }),
         siteSettings: {
@@ -122,7 +131,9 @@ export const useStore = create<AppStore>()(
             binanceQrUrl: '',
             binanceId: '',
             telegramBotLink: '',
-            telegramChannelLink: ''
+            telegramChannelLink: '',
+            tier1Price: '30',
+            tier2Price: '55'
         },
 
 
@@ -464,6 +475,7 @@ export const useStore = create<AppStore>()(
                     thumbnailUrl: c.thumbnail_url,
                     videoCount: c.video_count || 0,
                     published: c.published,
+                    isFeatured: c.is_featured || false,
                     createdAt: c.created_at,
                     updatedAt: c.updated_at,
                     content: [] // No sections in bulk fetch
@@ -488,6 +500,7 @@ export const useStore = create<AppStore>()(
                     thumbnailUrl: data.thumbnail_url,
                     videoCount: data.video_count || 0,
                     published: data.published,
+                    isFeatured: data.is_featured || false,
                     createdAt: data.created_at,
                     updatedAt: data.updated_at,
                     content: data.sections.map((s: any) => ({
@@ -511,7 +524,8 @@ export const useStore = create<AppStore>()(
                     description: courseData.description,
                     tier_required: courseData.tierRequired,
                     thumbnail_url: courseData.thumbnailUrl,
-                    published: courseData.published
+                    published: courseData.published,
+                    is_featured: courseData.isFeatured || false
                 })
                 .select()
                 .single();
@@ -528,6 +542,7 @@ export const useStore = create<AppStore>()(
                 tier_required: data.tierRequired,
                 thumbnail_url: data.thumbnailUrl,
                 published: data.published,
+                is_featured: data.isFeatured,
                 updated_at: new Date().toISOString()
             }).eq('id', id);
 
@@ -559,6 +574,7 @@ export const useStore = create<AppStore>()(
                     thumbnailUrl: t.thumbnail_url,
                     videoCount: t.video_count || 0,
                     published: t.published,
+                    isFeatured: t.is_featured || false,
                     createdAt: t.created_at,
                     updatedAt: t.updated_at,
                     sections: [] // No sections in bulk fetch
@@ -583,6 +599,7 @@ export const useStore = create<AppStore>()(
                     thumbnailUrl: data.thumbnail_url,
                     videoCount: data.video_count || 0,
                     published: data.published,
+                    isFeatured: data.is_featured || false,
                     createdAt: data.created_at,
                     updatedAt: data.updated_at,
                     sections: data.sections.map((s: any) => ({
@@ -604,7 +621,8 @@ export const useStore = create<AppStore>()(
                 description: toolData.description,
                 tier_required: toolData.tierRequired,
                 thumbnail_url: toolData.thumbnailUrl,
-                published: toolData.published
+                published: toolData.published,
+                is_featured: toolData.isFeatured || false
             });
             if (error) return { success: false, error: error.message };
             await get().fetchTools();
@@ -618,6 +636,7 @@ export const useStore = create<AppStore>()(
                 tier_required: data.tierRequired,
                 thumbnail_url: data.thumbnailUrl,
                 published: data.published,
+                is_featured: data.isFeatured,
                 updated_at: new Date().toISOString()
             }).eq('id', id);
             if (error) return { success: false, error: error.message };
@@ -962,7 +981,9 @@ export const useStore = create<AppStore>()(
                         binanceQrUrl: data.binance_qr_url,
                         binanceId: data.binance_id,
                         telegramBotLink: data.telegram_bot_link,
-                        telegramChannelLink: data.telegram_channel_link
+                        telegramChannelLink: data.telegram_channel_link,
+                        tier1Price: data.tier1_price || '30',
+                        tier2Price: data.tier2_price || '55'
                     }
                 });
             }
@@ -974,6 +995,8 @@ export const useStore = create<AppStore>()(
                 binance_id: data.binanceId,
                 telegram_bot_link: data.telegramBotLink,
                 telegram_channel_link: data.telegramChannelLink,
+                tier1_price: data.tier1Price,
+                tier2_price: data.tier2Price,
                 updated_at: new Date().toISOString()
             }).eq('id', 'main');
 
@@ -1055,7 +1078,49 @@ export const useStore = create<AppStore>()(
 
             const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
             return { publicUrl };
-        }
+        },
+
+        // Public Catalog — fetch published courses & tools without auth
+        fetchPublicCatalog: async () => {
+            const [coursesRes, toolsRes] = await Promise.all([
+                supabase.from('courses').select('*').eq('published', true).order('created_at', { ascending: false }),
+                supabase.from('tools').select('*').eq('published', true).order('created_at', { ascending: false }),
+            ]);
+
+            if (coursesRes.data) {
+                const mapped: Course[] = coursesRes.data.map(c => ({
+                    id: c.id,
+                    title: c.title,
+                    description: c.description,
+                    tierRequired: c.tier_required as UserTier,
+                    thumbnailUrl: c.thumbnail_url,
+                    videoCount: c.video_count || 0,
+                    published: c.published,
+                    createdAt: c.created_at,
+                    updatedAt: c.updated_at,
+                    isFeatured: c.is_featured || false,
+                    content: [],
+                }));
+                set({ publicCourses: mapped });
+            }
+
+            if (toolsRes.data) {
+                const mapped: Tool[] = toolsRes.data.map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    description: t.description,
+                    tierRequired: t.tier_required as UserTier,
+                    thumbnailUrl: t.thumbnail_url,
+                    videoCount: t.video_count || 0,
+                    published: t.published,
+                    createdAt: t.created_at,
+                    updatedAt: t.updated_at,
+                    isFeatured: t.is_featured || false,
+                    sections: [],
+                }));
+                set({ publicTools: mapped });
+            }
+        },
 
     })
 );

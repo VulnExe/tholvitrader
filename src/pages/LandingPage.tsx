@@ -1,16 +1,45 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Shield, BookOpen, ChevronRight, Wrench } from 'lucide-react';
-import { TIER_DATA, TIER_COMPARISON } from '@/lib/tierSystem';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Zap, Shield, BookOpen, ChevronRight, Wrench, Search, Filter, ShoppingCart, Sparkles, Star } from 'lucide-react';
+import { TIER_DATA, TIER_COMPARISON, getTierLabel, getTierGradient } from '@/lib/tierSystem';
+import { useStore } from '@/lib/store';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { UserTier } from '@/lib/types';
 
 export default function LandingPage() {
+    const { publicCourses, publicTools, fetchPublicCatalog, siteSettings, fetchSiteSettings, isAuthenticated } = useStore();
+
+    // Catalog state
+    const [activeTab, setActiveTab] = useState<'courses' | 'tools'>('tools');
+    const [search, setSearch] = useState('');
+    const [tierFilter, setTierFilter] = useState<string>('all');
+
+    // Fetch public catalog on mount
+    useEffect(() => {
+        fetchPublicCatalog();
+        fetchSiteSettings();
+    }, [fetchPublicCatalog, fetchSiteSettings]);
+
+    // Filtered items
+    const filteredCourses = publicCourses
+        .filter(c => c.title.toLowerCase().includes(search.toLowerCase()) || c.description.toLowerCase().includes(search.toLowerCase()))
+        .filter(c => tierFilter === 'all' || c.tierRequired === tierFilter);
+
+    const filteredTools = publicTools
+        .filter(t => t.title.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase()))
+        .filter(t => tierFilter === 'all' || t.tierRequired === tierFilter);
+
+    const activeItems = activeTab === 'courses' ? filteredCourses : filteredTools;
+    const totalCourses = publicCourses.length;
+    const totalTools = publicTools.length;
+
     return (
         <div className="min-h-screen bg-[#050507] overflow-hidden">
             {/* Nav */}
             <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050507]/80 backdrop-blur-xl border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-6 h-24 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2.5">
-                        <img src="/Tholvitrader.png" alt="TholviTrader" className="h-16 md:h-20 w-auto object-contain" />
+                        <img src="/Tholvitrader.png" alt="TholviTrader" className="h-14 md:h-16 w-auto object-contain" />
                     </Link>
                     <div className="flex items-center gap-6">
                         <a href="#pricing" className="text-sm text-white/50 hover:text-white transition-colors hidden md:block">
@@ -29,85 +58,264 @@ export default function LandingPage() {
                 </div>
             </nav>
 
-            {/* Hero Section */}
-            <section className="relative pt-40 pb-20 px-6">
+            {/* ═══════════════════════════════════════════════════════════ */}
+            {/* HERO + CATALOG — Everything in one first section           */}
+            {/* ═══════════════════════════════════════════════════════════ */}
+            <section id="catalog" className="relative pt-24 pb-12 px-6">
                 {/* Background Effects */}
                 <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-purple-600/20 via-blue-600/10 to-transparent rounded-full blur-3xl" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-br from-purple-600/20 via-blue-600/10 to-transparent rounded-full blur-3xl" />
                     <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/15 via-transparent to-transparent" />
                 </div>
 
-                <div className="relative max-w-5xl mx-auto text-center">
+                <div className="relative max-w-7xl mx-auto">
+                    {/* Compact Hero Header */}
+                    <div className="text-center mb-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-3">
+                                <Zap className="w-3.5 h-3.5" />
+                                CRACK TOOLS & PREMIUM BUNDLES
+                            </div>
+                        </motion.div>
+
+                        <motion.h1
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            className="text-3xl md:text-4xl font-bold text-white leading-tight"
+                        >
+                            Level Up Your{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Trading Edge</span>
+                        </motion.h1>
+
+                        <motion.p
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.15 }}
+                            className="mt-2 text-sm text-white/45 max-w-xl mx-auto"
+                        >
+                            Exclusive crack tools, full course bundles & private community access. Browse everything below — sign up when you're ready.
+                        </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="mt-4 flex items-center justify-center gap-3"
+                        >
+                            <Link
+                                to="/auth/signup"
+                                className="group px-5 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:-translate-y-0.5"
+                            >
+                                Start for Free
+                                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                            <Link
+                                to="/auth/login"
+                                className="px-5 py-2 bg-white/5 border border-white/10 rounded-xl text-white/60 text-sm font-medium hover:bg-white/10 transition-all"
+                            >
+                                Login
+                            </Link>
+                        </motion.div>
+                    </div>
+
+                    {/* Tab Switcher + Search/Filters */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
+                        transition={{ duration: 0.4, delay: 0.25 }}
                     >
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-medium mb-6">
-                            <Zap className="w-3.5 h-3.5" />
-                            CRACK TOOLS & PREMIUM BUNDLES
+                        {/* Tabs */}
+                        <div className="flex items-center justify-center gap-2 mb-4">
+                            <button
+                                onClick={() => { setActiveTab('tools'); setSearch(''); setTierFilter('all'); }}
+                                className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${activeTab === 'tools'
+                                    ? 'bg-gradient-to-r from-blue-600/20 to-cyan-600/20 text-white border border-blue-500/30 shadow-lg shadow-blue-500/10'
+                                    : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white/60'
+                                    }`}
+                            >
+                                <Wrench className="w-4 h-4" />
+                                Tools
+                                {totalTools > 0 && (
+                                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${activeTab === 'tools' ? 'bg-blue-500/30 text-blue-300' : 'bg-white/10 text-white/30'}`}>
+                                        {totalTools}
+                                    </span>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => { setActiveTab('courses'); setSearch(''); setTierFilter('all'); }}
+                                className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${activeTab === 'courses'
+                                    ? 'bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10'
+                                    : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white/60'
+                                    }`}
+                            >
+                                <BookOpen className="w-4 h-4" />
+                                Courses
+                                {totalCourses > 0 && (
+                                    <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${activeTab === 'courses' ? 'bg-purple-500/30 text-purple-300' : 'bg-white/10 text-white/30'}`}>
+                                        {totalCourses}
+                                    </span>
+                                )}
+                            </button>
+
+                        </div>
+
+                        {/* Search & Filters */}
+                        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                            <div className="relative flex-1 max-w-md mx-auto sm:mx-0 w-full">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder={`Search ${activeTab}...`}
+                                    className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 transition-all"
+                                />
+                            </div>
+                            <div className="flex items-center justify-center gap-2 flex-wrap">
+                                <Filter className="w-4 h-4 text-white/20" />
+                                {['all', 'free', 'tier1', 'tier2'].map(t => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setTierFilter(t)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${tierFilter === t
+                                            ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                            : 'bg-white/5 text-white/40 border border-white/5 hover:bg-white/10'
+                                            }`}
+                                    >
+                                        {t === 'all' ? 'All Tiers' : t === 'free' ? 'Free' : (
+                                            <>
+                                                {getTierLabel(t as any)}
+                                                <span className="ml-1 opacity-50 font-normal">
+                                                    (${t === 'tier1' ? (siteSettings.tier1Price || '30') : (siteSettings.tier2Price || '55')})
+                                                </span>
+                                            </>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </motion.div>
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-5xl md:text-7xl font-bold text-white leading-tight"
-                    >
-                        Level Up Your
-                        <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Trading Edge</span>
-                    </motion.h1>
-
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="mt-6 text-lg text-white/50 max-w-2xl mx-auto leading-relaxed"
-                    >
-                        Get access to exclusive crack tools, full bundles of trading courses, and
-                        private community insights. All premium content delivered directly via Telegram.
-                    </motion.p>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-                    >
-                        <Link
-                            to="/auth/signup"
-                            className="group px-8 py-3.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-white font-medium flex items-center gap-2 hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:-translate-y-0.5"
+                    {/* Product Grid */}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab + tierFilter}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                         >
-                            Start for Free
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                        <a
-                            href="#pricing"
-                            className="px-8 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white/70 font-medium hover:bg-white/10 transition-all"
-                        >
-                            Check Pricing
-                        </a>
-                    </motion.div>
+                            {activeItems.map((item, i) => (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                                    className="group"
+                                >
+                                    <div className="h-full p-4 bg-white/[0.03] border border-white/[0.06] rounded-2xl hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 flex flex-col relative overflow-hidden">
+                                        {/* Hover glow */}
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    {/* Stats */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto"
-                    >
-                        {[
-                            { value: '10+', label: 'Crack Tools' },
-                            { value: '25+', label: 'Full Bundles' },
-                        ].map((stat, i) => (
-                            <div key={i} className="text-center">
-                                <p className="text-3xl font-bold text-white">{stat.value}</p>
-                                <p className="text-xs text-white/40 mt-1">{stat.label}</p>
-                            </div>
-                        ))}
-                    </motion.div>
+                                        {/* Best Seller Badge */}
+                                        {item.isFeatured && (
+                                            <div className="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-md bg-yellow-500 text-black text-[10px] font-bold shadow-lg shadow-yellow-500/20 flex items-center gap-1">
+                                                <Star className="w-3 h-3 fill-black" />
+                                                BEST SELLER
+                                            </div>
+                                        )}
+
+                                        {/* Thumbnail */}
+                                        {item.thumbnailUrl ? (
+                                            <div className="mb-3 rounded-xl overflow-hidden h-28 bg-white/5 relative">
+                                                <img
+                                                    src={item.thumbnailUrl}
+                                                    alt={item.title}
+                                                    className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#050507]/80 via-transparent to-transparent" />
+                                            </div>
+                                        ) : (
+                                            <div className="mb-3 rounded-xl h-28 bg-gradient-to-br from-white/[0.03] to-white/[0.01] flex items-center justify-center">
+                                                {activeTab === 'courses' ? (
+                                                    <BookOpen className="w-8 h-8 text-white/10" />
+                                                ) : (
+                                                    <Wrench className="w-8 h-8 text-white/10" />
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Tier Badge */}
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className={`inline-flex items-center px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-gradient-to-r ${getTierGradient(item.tierRequired)} text-white shadow-sm`}>
+                                                {getTierLabel(item.tierRequired)}
+                                            </span>
+                                            <span className="text-[10px] text-white/25">
+                                                {item.videoCount} sections
+                                            </span>
+                                        </div>
+
+                                        {/* Title & Description */}
+                                        <h3 className="text-sm font-bold text-white mb-1 line-clamp-1 group-hover:text-purple-300 transition-colors">
+                                            {item.title}
+                                        </h3>
+                                        <p className="text-white/35 text-xs line-clamp-2 leading-relaxed flex-1 mb-3">
+                                            {item.description}
+                                        </p>
+
+                                        {/* CTA */}
+                                        <Link
+                                            to="/auth/login"
+                                            className="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs font-semibold transition-all duration-300 bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-300 border border-purple-500/20 hover:from-purple-600/30 hover:to-blue-600/30 hover:border-purple-500/40 hover:shadow-lg hover:shadow-purple-500/10"
+                                        >
+                                            <ShoppingCart className="w-3.5 h-3.5" />
+                                            Get Access
+                                        </Link>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
+
+                    {/* Empty state */}
+                    {activeItems.length === 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center py-16"
+                        >
+                            {activeTab === 'courses' ? (
+                                <BookOpen className="w-12 h-12 text-white/5 mx-auto mb-4" />
+                            ) : (
+                                <Wrench className="w-12 h-12 text-white/5 mx-auto mb-4" />
+                            )}
+                            <p className="text-white/20 text-sm mb-1">No {activeTab} found</p>
+                            <p className="text-white/10 text-xs">
+                                {search ? 'Try a different search term' : 'Check back soon for new content'}
+                            </p>
+                        </motion.div>
+                    )}
+
+                    {/* Signup CTA */}
+                    {activeItems.length > 0 && (
+                        <div className="text-center mt-8">
+                            <Link
+                                to="/auth/signup"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl text-sm font-medium text-white hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:-translate-y-0.5"
+                            >
+                                Sign Up to Unlock All Content
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
+                            <p className="mt-2 text-white/20 text-xs">Free signup — browse everything, upgrade when ready</p>
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -155,7 +363,6 @@ export default function LandingPage() {
                                 borderColor: 'border-orange-500/20',
                             },
                         ].map((feature, i) => {
-                            const Wrench = (props: any) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>;
                             const Icon = feature.icon;
                             return (
                                 <motion.div
@@ -258,64 +465,61 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {Object.values(TIER_DATA).map((tier, i) => (
-                            <motion.div
-                                key={tier.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.15 }}
-                                className={`
-                  relative p-7 rounded-2xl border transition-all duration-300 hover-lift
-                  ${tier.highlighted
-                                        ? 'border-purple-500/40 bg-gradient-to-b from-purple-500/10 to-purple-900/5 shadow-xl shadow-purple-900/20'
-                                        : 'border-white/5 bg-white/[0.02]'}
-                `}
-                            >
-                                {tier.highlighted && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-xs text-white font-bold uppercase tracking-wider">
-                                        Recommended
-                                    </div>
-                                )}
+                        {Object.values(TIER_DATA).map((tierItem, i) => {
+                            // Override price with dynamic settings
+                            const dynamicPrice = tierItem.id === 'tier1' ? (siteSettings.tier1Price || tierItem.price)
+                                : tierItem.id === 'tier2' ? (siteSettings.tier2Price || tierItem.price)
+                                    : tierItem.price;
 
-                                <h3 className="text-lg font-semibold text-white">{tier.name}</h3>
-                                <div className="flex items-baseline gap-1 mt-3">
-                                    <span className="text-3xl font-bold text-white">${tier.price}</span>
-                                    {tier.id !== 'free' && <span className="text-white/40 text-sm">/one-time</span>}
-                                </div>
-
-                                <ul className="mt-6 space-y-3">
-                                    {tier.features.map((f, j) => (
-                                        <li key={j} className="flex items-start gap-2.5 text-sm text-white/60">
-                                            <div className="w-4 h-4 rounded-full bg-green-500/10 flex items-center justify-center mt-0.5 shrink-0">
-                                                <svg className="w-2.5 h-2.5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </div>
-                                            {f}
-                                        </li>
-                                    ))}
-                                </ul>
-
-                                <Link
-                                    to="/auth/signup"
-                                    className={`
-                    block w-full mt-8 py-3 rounded-xl text-center text-sm font-medium transition-all duration-300
-                    ${tier.highlighted
-                                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:shadow-purple-500/25'
-                                            : 'bg-white/5 text-white/70 border border-white/10 hover:bg-white/10'}
-                  `}
+                            return (
+                                <motion.div
+                                    key={tierItem.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    className={`relative p-8 rounded-3xl border ${tierItem.highlighted ? 'bg-purple-500/10 border-purple-500/30' : 'bg-white/5 border-white/10'}`}
                                 >
-                                    {tier.id === 'free' ? 'Get Started Free' : `Get ${tier.name}`}
-                                </Link>
-                            </motion.div>
-                        ))}
+                                    {tierItem.highlighted && (
+                                        <div className="absolute top-0 right-0 px-4 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-bl-xl rounded-tr-2xl">
+                                            Most Popular
+                                        </div>
+                                    )}
+
+                                    <h3 className="text-lg font-bold text-white mb-2">{tierItem.name}</h3>
+                                    <div className="flex items-baseline gap-1 mb-6">
+                                        <span className="text-4xl font-bold text-white">${dynamicPrice}</span>
+                                        <span className="text-sm text-white/40">/month</span>
+                                    </div>
+
+                                    <ul className="space-y-4 mb-8">
+                                        {tierItem.features.map((feature, fi) => (
+                                            <li key={fi} className="flex items-start gap-3 text-sm text-white/60">
+                                                <Zap className={`w-4 h-4 shrink-0 mt-0.5 ${tierItem.highlighted ? 'text-purple-400' : 'text-white/20'}`} />
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    <Link
+                                        to={isAuthenticated ? '/upgrade' : '/auth/signup'}
+                                        className={`w-full py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all ${tierItem.highlighted
+                                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:shadow-lg hover:shadow-purple-500/25'
+                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                            }`}
+                                    >
+                                        {isAuthenticated ? 'Upgrade Now' : 'Start Free Trial'}
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                </motion.div>
+                            )
+                        })}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Feature Comparison */}
-            <section className="py-16 px-6">
+            < section className="py-16 px-6" >
                 <div className="max-w-4xl mx-auto text-center">
                     <h3 className="text-xl font-bold text-white mb-8">Access Matrix</h3>
                     <div className="rounded-xl border border-white/5 overflow-hidden overflow-x-auto">
@@ -360,10 +564,10 @@ export default function LandingPage() {
                     </div>
                     <p className="mt-6 text-xs text-white/30 italic">* All premium content delivered via verified Telegram after payment verification.</p>
                 </div>
-            </section>
+            </section >
 
             {/* CTA */}
-            <section className="py-20 px-6">
+            < section className="py-20 px-6" >
                 <div className="max-w-3xl mx-auto text-center">
                     <div className="p-12 rounded-2xl bg-gradient-to-br from-purple-600/10 via-blue-600/5 to-transparent border border-purple-500/20 relative overflow-hidden">
                         <div className="absolute inset-0">
@@ -381,10 +585,10 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Footer */}
-            <footer className="border-t border-white/5 py-12 px-6">
+            < footer className="border-t border-white/5 py-12 px-6" >
                 <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
                         <Link to="/" className="flex items-center gap-2">
@@ -400,7 +604,7 @@ export default function LandingPage() {
                         <p className="text-sm text-white/20">TholviTrader © 2025. Institutional assets and professional bundles. Not financial advice.</p>
                     </div>
                 </div>
-            </footer>
-        </div>
+            </footer >
+        </div >
     );
 }

@@ -6,7 +6,7 @@ import Modal from '@/components/ui/Modal';
 import FileUpload from '@/components/ui/FileUpload';
 import { UserTier } from '@/lib/types';
 import { getTierLabel } from '@/lib/tierSystem';
-import { BookOpen, Wrench, FileText, Plus, Edit, Trash2, Search, Loader2, Save, Eye, EyeOff } from 'lucide-react';
+import { BookOpen, Wrench, FileText, Plus, Edit, Trash2, Search, Loader2, Save, Eye, EyeOff, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -33,6 +33,7 @@ export default function AdminContentPage() {
     const [description, setDescription] = useState('');
     const [tierRequired, setTierRequired] = useState<UserTier>('free');
     const [published, setPublished] = useState(true);
+    const [isFeatured, setIsFeatured] = useState(false);
     const [thumbnailUrl, setThumbnailUrl] = useState('');
     // Blog extras
     const [content, setContent] = useState('');
@@ -71,6 +72,7 @@ export default function AdminContentPage() {
         setDescription(item.description || '');
         setTierRequired(item.tierRequired || 'free');
         setPublished(item.published ?? true);
+        setIsFeatured(item.isFeatured ?? false);
         setThumbnailUrl(item.thumbnailUrl || '');
         setContent(item.content || '');
         setPreview(item.preview || '');
@@ -80,7 +82,7 @@ export default function AdminContentPage() {
     };
 
     const resetForm = () => {
-        setTitle(''); setDescription(''); setTierRequired('free'); setPublished(true);
+        setTitle(''); setDescription(''); setTierRequired('free'); setPublished(true); setIsFeatured(false);
         setThumbnailUrl(''); setContent(''); setPreview(''); setAuthor(''); setReadTime(5);
     };
 
@@ -90,7 +92,7 @@ export default function AdminContentPage() {
         setSaving(true);
         let result;
 
-        const base = { title, description, tierRequired, published, thumbnailUrl };
+        const base = { title, description, tierRequired, published, isFeatured, thumbnailUrl };
 
         if (activeTab === 'courses') {
             result = editing
@@ -245,16 +247,29 @@ export default function AdminContentPage() {
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-white/50 mb-2">Status</label>
-                            <button
-                                type="button"
-                                onClick={() => setPublished(!published)}
-                                className={`w-full px-4 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all ${published ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-white/40 border border-white/10'}`}
-                            >
-                                {published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                {published ? 'Published' : 'Draft'}
-                            </button>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-sm font-medium text-white/50 mb-2">Status</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setPublished(!published)}
+                                    className={`w-full px-2 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium transition-all ${published ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-white/5 text-white/40 border border-white/10'}`}
+                                >
+                                    {published ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                    {published ? 'Live' : 'Draft'}
+                                </button>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-white/50 mb-2">Featured</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsFeatured(!isFeatured)}
+                                    className={`w-full px-2 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-medium transition-all ${isFeatured ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-white/5 text-white/40 border border-white/10'}`}
+                                >
+                                    <Star className={`w-3.5 h-3.5 ${isFeatured ? 'fill-yellow-400' : ''}`} />
+                                    {isFeatured ? 'Best Seller' : 'Normal'}
+                                </button>
+                            </div>
                         </div>
                     </div>
 

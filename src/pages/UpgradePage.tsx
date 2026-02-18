@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useStore } from '@/lib/store';
 import { TIER_DATA, TIER_COMPARISON, getTierGradient } from '@/lib/tierSystem';
@@ -9,9 +10,18 @@ import { UserTier } from '@/lib/types';
 
 export default function UpgradePage() {
     const navigate = useNavigate();
-    const { user } = useStore();
+    const { user, siteSettings, fetchSiteSettings } = useStore();
 
-    const tiers = Object.values(TIER_DATA);
+    useEffect(() => {
+        fetchSiteSettings();
+    }, [fetchSiteSettings]);
+
+    const tiers = Object.values(TIER_DATA).map(tier => ({
+        ...tier,
+        price: tier.id === 'tier1' ? (siteSettings.tier1Price || tier.price)
+            : tier.id === 'tier2' ? (siteSettings.tier2Price || tier.price)
+                : tier.price
+    }));
 
     return (
         <DashboardLayout>
@@ -93,8 +103,8 @@ export default function UpgradePage() {
                             <tr className="border-b border-white/5">
                                 <th className="text-left py-4 px-4 text-white/30 font-medium">Feature</th>
                                 <th className="text-center py-4 px-4 text-white/30 font-medium">Free</th>
-                                <th className="text-center py-4 px-4 text-purple-400 font-medium">Tier 1</th>
-                                <th className="text-center py-4 px-4 text-white/30 font-medium">Tier 2</th>
+                                <th className="text-center py-4 px-4 text-purple-400 font-medium">Tier 1 (${siteSettings.tier1Price || '30'})</th>
+                                <th className="text-center py-4 px-4 text-white/30 font-medium">Tier 2 (${siteSettings.tier2Price || '55'})</th>
                             </tr>
                         </thead>
                         <tbody>
