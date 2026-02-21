@@ -508,7 +508,7 @@ export default function LandingPage() {
                                             : 'bg-white/10 text-white hover:bg-white/20'
                                             }`}
                                     >
-                                        {isAuthenticated ? 'Upgrade Now' : 'Start Free Trial'}
+                                        {isAuthenticated ? 'Upgrade Now' : (tierItem.id === 'free' ? 'Get Started Free' : 'Join Now')}
                                         <ArrowRight className="w-4 h-4" />
                                     </Link>
                                 </motion.div>
