@@ -7,13 +7,12 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGri
 import { Link } from 'react-router-dom';
 
 export default function AdminDashboardPage() {
-    const { adminStats, fetchAdminStats, courses, blogs, tools, fetchCourses, fetchBlogs, fetchTools, isInitialized, isAuthenticated } = useStore();
+    const { adminStats, fetchAdminStats, courses, tools, fetchCourses, fetchTools, isInitialized, isAuthenticated } = useStore();
 
     useEffect(() => {
         if (isInitialized && isAuthenticated) {
             fetchAdminStats();
             fetchCourses();
-            fetchBlogs();
             fetchTools();
         }
     }, [isInitialized, isAuthenticated]);
@@ -22,7 +21,7 @@ export default function AdminDashboardPage() {
         { label: 'Total Users', value: adminStats.totalUsers, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
         { label: 'Pending Payments', value: adminStats.pendingPayments, icon: CreditCard, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
         { label: 'Total Revenue', value: `$${adminStats.totalRevenue}`, icon: DollarSign, color: 'text-green-400', bg: 'bg-green-500/10' },
-        { label: 'Content Items', value: courses.length + blogs.length + tools.length, icon: BookOpen, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+        { label: 'Courses & Tools', value: courses.length + tools.length, icon: BookOpen, color: 'text-blue-400', bg: 'bg-blue-500/10' },
     ];
 
     const chartData = [
@@ -105,7 +104,7 @@ export default function AdminDashboardPage() {
                         {[
                             { label: 'Manage Users', desc: `${adminStats.totalUsers} registered users`, icon: Users, href: '/admin/users' },
                             { label: 'Review Payments', desc: `${adminStats.pendingPayments} pending`, icon: CreditCard, href: '/admin/payments' },
-                            { label: 'Manage Content', desc: `${courses.length + blogs.length + tools.length} items`, icon: BookOpen, href: '/admin/content' },
+                            { label: 'Manage Courses & Tools', desc: `${courses.length + tools.length} items`, icon: BookOpen, href: '/admin/content' },
                             { label: 'Site Settings', desc: 'Binance, Telegram config', icon: TrendingUp, href: '/admin/settings' },
                         ].map((item, i) => (
                             <Link

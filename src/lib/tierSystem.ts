@@ -53,9 +53,9 @@ export const TIER_DATA = {
         highlighted: false,
         features: [
             'Basic trading tutorials',
-            'Blog previews',
             'Community news',
             'Basic market insights',
+            'Course previews',
         ],
     },
     tier1: {

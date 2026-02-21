@@ -52,7 +52,9 @@ export default function ToolDetailPage() {
                                 <span className="text-xs text-white/30">{tool.videoCount} sections</span>
                             </div>
                             <h1 className="text-2xl font-bold text-white mb-2">{tool.title}</h1>
-                            <p className="text-white/40 text-sm">{tool.description}</p>
+                            <p className="text-white/40 text-sm mb-4">{tool.description}</p>
+
+
                         </div>
 
                         {!hasAccess ? (

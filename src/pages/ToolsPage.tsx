@@ -94,7 +94,9 @@ export default function ToolsPage() {
                                     </div>
 
                                     <h3 className="text-base font-bold text-white mb-2 line-clamp-1 group-hover:text-blue-300 transition-colors">{tool.title}</h3>
-                                    <p className="text-white/40 text-xs line-clamp-2 leading-relaxed flex-1">{tool.description}</p>
+                                    <p className="text-white/40 text-xs line-clamp-2 leading-relaxed mb-3">{tool.description}</p>
+
+
 
                                     <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
                                         <span className="text-[10px] text-white/20 font-bold uppercase tracking-wider flex items-center gap-1">

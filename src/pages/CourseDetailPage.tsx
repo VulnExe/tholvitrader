@@ -53,7 +53,9 @@ export default function CourseDetailPage() {
                                 <span className="text-xs text-white/30">{course.videoCount} sections</span>
                             </div>
                             <h1 className="text-2xl font-bold text-white mb-2">{course.title}</h1>
-                            <p className="text-white/40 text-sm">{course.description}</p>
+                            <p className="text-white/40 text-sm mb-4">{course.description}</p>
+
+
                         </div>
 
                         {!hasAccess ? (

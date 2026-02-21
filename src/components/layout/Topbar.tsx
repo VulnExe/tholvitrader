@@ -1,5 +1,5 @@
 import { useStore } from '@/lib/store';
-import { Bell, Search, X, BookOpen, Wrench, Newspaper, ArrowRight, Menu } from 'lucide-react';
+import { Bell, Search, X, BookOpen, Wrench, ArrowRight, Menu } from 'lucide-react';
 import TierBadge from '../ui/TierBadge';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,7 +18,6 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
         setSearchQuery,
         courses,
         tools,
-        blogs
     } = useStore();
 
     const [showNotifs, setShowNotifs] = useState(false);
@@ -39,12 +38,7 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
         t.description.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 3);
 
-    const filteredBlogs = blogs.filter(b =>
-        b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        b.content.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 3);
-
-    const hasResults = searchQuery.length > 0 && (filteredCourses.length > 0 || filteredTools.length > 0 || filteredBlogs.length > 0);
+    const hasResults = searchQuery.length > 0 && (filteredCourses.length > 0 || filteredTools.length > 0);
 
     // Close search results on click outside
     useEffect(() => {
@@ -78,7 +72,7 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
                             setShowSearch(true);
                         }}
                         onFocus={() => setShowSearch(true)}
-                        placeholder="Search courses, tools, blogs..."
+                        placeholder="Search courses, tools..."
                         className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/5 rounded-lg text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20 transition-all font-medium"
                     />
 
@@ -139,28 +133,6 @@ export default function Topbar({ setMobileOpen }: TopbarProps) {
                                                                 <Wrench className="w-4 h-4" />
                                                             </div>
                                                             <span className="text-sm text-white/70 group-hover:text-white capitalize">{t.title}</span>
-                                                        </div>
-                                                        <ArrowRight className="w-3 h-3 text-white/10 group-hover:text-white group-hover:translate-x-1 transition-all" />
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {filteredBlogs.length > 0 && (
-                                            <div>
-                                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-bold mb-2 ml-2">Blogs</p>
-                                                {filteredBlogs.map(b => (
-                                                    <Link
-                                                        key={b.id}
-                                                        to={`/blog/${b.id}`}
-                                                        onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-                                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 group transition-all"
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center text-green-400">
-                                                                <Newspaper className="w-4 h-4" />
-                                                            </div>
-                                                            <span className="text-sm text-white/70 group-hover:text-white capitalize">{b.title}</span>
                                                         </div>
                                                         <ArrowRight className="w-3 h-3 text-white/10 group-hover:text-white group-hover:translate-x-1 transition-all" />
                                                     </Link>

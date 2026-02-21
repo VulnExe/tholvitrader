@@ -17,8 +17,7 @@ import CoursesPage from '@/pages/CoursesPage';
 import CourseDetailPage from '@/pages/CourseDetailPage';
 import ToolsPage from '@/pages/ToolsPage';
 import ToolDetailPage from '@/pages/ToolDetailPage';
-import BlogPage from '@/pages/BlogPage';
-import BlogDetailPage from '@/pages/BlogDetailPage';
+
 import SettingsPage from '@/pages/SettingsPage';
 import MyAccessPage from '@/pages/MyAccessPage';
 import UpgradePage from '@/pages/UpgradePage';
@@ -26,6 +25,7 @@ import CheckoutPage from '@/pages/CheckoutPage';
 
 // Public pages
 import LandingPage from '@/pages/LandingPage';
+import SupportChat from '@/components/ui/SupportChat';
 
 // Admin pages
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
@@ -162,8 +162,7 @@ export default function App() {
           <Route path="/courses/:id" element={<ProtectedRoute><CourseDetailPage /></ProtectedRoute>} />
           <Route path="/tools" element={<ProtectedRoute><ToolsPage /></ProtectedRoute>} />
           <Route path="/tools/:id" element={<ProtectedRoute><ToolDetailPage /></ProtectedRoute>} />
-          <Route path="/blog" element={<ProtectedRoute><BlogPage /></ProtectedRoute>} />
-          <Route path="/blog/:id" element={<ProtectedRoute><BlogDetailPage /></ProtectedRoute>} />
+
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/my-access" element={<ProtectedRoute><MyAccessPage /></ProtectedRoute>} />
           <Route path="/upgrade" element={<ProtectedRoute><UpgradePage /></ProtectedRoute>} />
@@ -190,6 +189,7 @@ export default function App() {
         </Routes>
       </AuthInitializer>
 
+      <SupportChat />
       <Toaster
         position="top-right"
         toastOptions={{

@@ -20,7 +20,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         if (isInitialized && isAuthenticated) {
             fetchNotifications();
             useStore.getState().fetchCourses();
-            useStore.getState().fetchBlogs();
         }
     }, [isInitialized, isAuthenticated, fetchNotifications]);
 

@@ -37,7 +37,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/courses', label: 'Courses', icon: BookOpen },
         { href: '/tools', label: 'Tools', icon: Wrench },
-        { href: '/blog', label: 'Blog', icon: FileText },
         { href: '/my-access', label: 'My Access', icon: ShieldCheck },
         { href: '/settings', label: 'Settings', icon: Settings },
     ];
@@ -46,7 +45,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }: SidebarProps) {
         { href: '/admin', icon: LayoutDashboard, label: 'Admin Dashboard' },
         { href: '/admin/payments', icon: CreditCard, label: 'Payment Review' },
         { href: '/admin/users', icon: Users, label: 'Users' },
-        { href: '/admin/content', icon: FolderOpen, label: 'Content' },
+        { href: '/admin/content', icon: FolderOpen, label: 'Courses & Tools' },
         { href: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
         { href: '/admin/settings', icon: Settings, label: 'Settings' },
     ];

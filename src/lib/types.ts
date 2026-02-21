@@ -44,6 +44,9 @@ export interface Course {
     videoCount: number;
     published: boolean;
     isFeatured: boolean;
+    realPrice?: number;
+    salePrice?: number;
+    originalCourseLink?: string;
     createdAt: string;
     updatedAt: string;
     content: CourseSection[];
@@ -80,6 +83,9 @@ export interface Tool {
     videoCount: number;
     published: boolean;
     isFeatured: boolean;
+    realPrice?: number;
+    salePrice?: number;
+    originalCourseLink?: string;
     createdAt: string;
     updatedAt: string;
     sections: ToolSection[];
@@ -93,19 +99,6 @@ export interface CourseProgress {
     lastAccessedAt: string;
 }
 
-// ============ BLOG TYPES ============
-export interface Blog {
-    id: string;
-    title: string;
-    content: string;
-    preview: string;
-    tierRequired: UserTier;
-    thumbnailUrl?: string;
-    published: boolean;
-    author: string;
-    readTime: number;
-    createdAt: string;
-}
 
 // ============ PAYMENT TYPES ============
 export type PaymentStatus = 'pending' | 'approved' | 'rejected';
